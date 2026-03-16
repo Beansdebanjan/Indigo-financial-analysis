@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IndiGo — Investment Banking Dashboard | 15-Year Analysis</title>
+  <meta name="description" content="IndiGo (InterGlobe Aviation) 15-Year Investment Banking Dashboard — Revenue, EBITDA, Fleet, DCF, LBO, M&A Comps. Real Data FY2011–FY2025.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .story-card { background: linear-gradient(135deg, rgba(0,180,255,0.06), rgba(168,85,247,0.06)); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .event-line { display:flex; align-items:flex-start; gap:14px; padding:10px 0; border-bottom:1px solid rgba(0,180,255,0.05); }
+    .event-line:last-child { border-bottom:none; }
+    .event-year { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:var(--accent-blue); width:44px; flex-shrink:0; margin-top:2px; }
+    .event-text { font-size:12px; color:var(--text-secondary); line-height:1.5; }
+    .event-tag { display:inline-block; padding:1px 7px; border-radius:10px; font-size:9px; font-weight:700; margin-left:6px; }
+    .tag-green { background:rgba(0,229,160,0.15); color:var(--accent-green); }
+    .tag-red { background:rgba(255,69,96,0.15); color:var(--accent-red); }
+    .tag-gold { background:rgba(245,197,24,0.15); color:var(--accent-gold); }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <!-- Header -->
+      <div class="animate-in" style="margin-bottom:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">CORPORATE FINANCIAL INTELLIGENCE</div>
+            <div class="section-title">Loading... 💼</div>
+            <div class="section-subtitle">Real Data Analysis</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="dcf.html" class="btn btn-outline">🔢 DCF Model</a>
+            <a href="lbo.html" class="btn btn-outline">🏦 LBO Model</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Row 1 -->
+      <div class="kpi-grid animate-in delay-1">
+        <div class="kpi-card blue"><div class="kpi-accent"></div><div class="kpi-label">Latest Revenue</div><div class="kpi-value" id="kpi-rev">...</div><div class="kpi-change up" id="kpi-rev-yoy">...</div><div class="progress-bar"><div class="progress-fill fill-blue" style="width:90%"></div></div></div>
+        <div class="kpi-card green"><div class="kpi-accent"></div><div class="kpi-label">Latest EBITDA</div><div class="kpi-value" id="kpi-ebitda">...</div><div class="kpi-change up" id="kpi-ebitda-margin">...</div><div class="progress-bar"><div class="progress-fill fill-green" style="width:88%"></div></div></div>
+        <div class="kpi-card gold"><div class="kpi-accent"></div><div class="kpi-label">Latest Net Profit</div><div class="kpi-value" id="kpi-ni">...</div><div class="kpi-change up" id="kpi-ni-margin">...</div><div class="progress-bar"><div class="progress-fill fill-gold" style="width:80%"></div></div></div>
+        <div class="kpi-card purple"><div class="kpi-accent"></div><div class="kpi-label">Market Cap</div><div class="kpi-value" id="kpi-mcap" style="font-size:20px;">...</div><div class="kpi-change up" id="kpi-mcap-ratios">...</div><div class="progress-bar"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,var(--accent-purple),var(--accent-blue))"></div></div></div>
+      </div>
+
+      <!-- KPI Row 2 — Financial News -->
+      <div class="kpi-grid animate-in delay-2" style="grid-template-columns:1fr; margin-top:20px;">
+        <div class="card" style="height:100%;">
+          <div class="card-header"><div class="card-title">📰 Recent Financial News</div></div>
+          <div class="card-body" id="news-container">
+            <div style="padding:20px; color:var(--text-muted); text-align:center;">Loading recent news...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Revenue Chart (wide) -->
+      <div class="card animate-in delay-2" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">📈 Corporate Revenue & EBITDA Journey</div>
+          <div style="display:flex;gap:8px;">
+            <span class="badge blue">Historical</span>
+            <span class="badge gold">Real Data</span>
+          </div>
+        </div>
+        <!-- Annotation labels for key events -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;" id="chart-tags">
+        </div>
+        <div class="chart-container" style="height:280px;"><canvas id="revChart15"></canvas></div>
+      </div>
+
+      <!-- Net Income + Margins -->
+      <div class="grid-2 animate-in delay-3">
+        <div class="card">
+          <div class="card-header"><div class="card-title">💹 Net Income — 15-Year Trend</div><span class="badge blue">₹ Crores</span></div>
+          <div class="chart-container" style="height:240px;"><canvas id="niChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📐 EBITDA Margin vs Net Margin</div><span class="badge blue">%</span></div>
+          <div class="chart-container" style="height:240px;"><canvas id="marginChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Story Timeline + Quick Ratios -->
+      <div class="grid-2 animate-in delay-5">
+        <div class="story-card">
+          <div class="card-header"><div class="card-title">📖 Company Profile & Summary</div></div>
+          <p id="company-summary" style="font-size:13px; color:var(--text-secondary); line-height:1.6; padding-top:10px;">Loading profile...</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎯 Key Metrics Snapshot</div></div>
+          <div class="metric-row"><span class="metric-name">P/E Ratio (Trailing)</span><span class="metric-value" style="color:var(--accent-blue)" id="snap-pe">...</span></div>
+          <div class="metric-row"><span class="metric-name">P/E Ratio (Forward)</span><span class="metric-value" style="color:var(--accent-gold)" id="snap-fpe">...</span></div>
+          <div class="metric-row"><span class="metric-name">Dividend Yield</span><span class="metric-value" style="color:var(--accent-green)" id="snap-div">...</span></div>
+          <div class="metric-row"><span class="metric-name">Beta</span><span class="metric-value" style="color:var(--accent-blue)" id="snap-beta">...</span></div>
+          <div class="metric-row"><span class="metric-name">52-Week High</span><span class="metric-value" style="color:var(--text-secondary)" id="snap-high">...</span></div>
+          <div class="metric-row"><span class="metric-name">52-Week Low</span><span class="metric-value" style="color:var(--accent-red)" id="snap-low">...</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('index.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('Executive Dashboard', 'Real Financial Intelligence');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+// Setup dynamic currency labels
+const cur = COMPANY.currency === 'INR' ? '₹' : (COMPANY.currency === 'USD' ? '$' : COMPANY.currency + ' ');
+const unitStr = COMPANY.unit === 'Millions' ? 'M' : 'Cr';
+document.querySelectorAll('.badge.blue').forEach(b => { if(b.innerText.includes('Crores')) b.innerText = `${cur} ${COMPANY.unit}`; });
+
+const sx = { grid:{color:'rgba(0,180,255,0.05)'}, ticks:{color:'#7aaccc',font:{size:10},maxRotation:45} };
+const sy = v => ({ grid:{color:'rgba(0,180,255,0.05)'}, ticks:{color:'#7aaccc',font:{size:10},callback:v} });
+const pl = { legend:{labels:{color:'#7aaccc',font:{size:11},padding:14}}, tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1} };
+
+// 15-Year Revenue + EBITDA
+new Chart(document.getElementById('revChart15'), {
+  data: {
+    labels: YEARS_SHORT,
+    datasets: [
+      { type:'bar', label:'Revenue', data:IS.revenue, backgroundColor:'rgba(0,180,255,0.55)', borderColor:'#00b4ff', borderWidth:1, borderRadius:4, yAxisID:'y' },
+      { type:'bar', label:'EBITDA',  data:IS.ebitda,  backgroundColor: IS.ebitda.map(v=>v<0?'rgba(255,69,96,0.55)':'rgba(0,229,160,0.6)'), borderRadius:4, yAxisID:'y' },
+      { type:'line', label:'Revenue Growth %', data: IS.revenue.map((r,i)=>i===0?null:((r-IS.revenue[i-1])/Math.abs(IS.revenue[i-1])*100).toFixed(1)), borderColor:'#f5c518', borderWidth:2, borderDash:[4,3], pointBackgroundColor:'#f5c518', pointRadius:3, tension:0.3, yAxisID:'y2' },
+    ]
+  },
+  options: { ...CHART_DEFAULTS, scales: {
+    x: sx,
+    y: { ...sy(v=>cur+(Math.abs(v)>=1000?(v/1000).toFixed(1)+'B':v)+unitStr), title:{display:true,text:`${cur} ${COMPANY.unit}`,color:'#3a6a88',font:{size:9}} },
+    y2: { position:'right', grid:{display:false}, ticks:{color:'#f5c518',font:{size:10},callback:v=>v+'%'}, title:{display:true,text:'YoY Growth %',color:'#f5c518',font:{size:9}} }
+  }, plugins: { ...pl, legend:{...pl.legend} } }
+});
+
+// Net Income (pos = green, neg = red)
+new Chart(document.getElementById('niChart'), {
+  type:'bar',
+  data: {
+    labels: YEARS_SHORT,
+    datasets: [{ label:`Net Income (${cur} ${COMPANY.unit})`, data:IS.netIncome,
+      backgroundColor: IS.netIncome.map(v=>v<0?'rgba(255,69,96,0.65)':'rgba(0,229,160,0.7)'),
+      borderRadius:4 }]
+  },
+  options: { ...CHART_DEFAULTS, scales:{x:sx,y:sy(v=>cur+(Math.abs(v)>=1000?(v/1000).toFixed(1)+'B':v)+unitStr)}, plugins:{...pl,legend:{display:false}} }
+});
+
+// Margins
+new Chart(document.getElementById('marginChart'), {
+  type:'line',
+  data: {
+    labels: YEARS_SHORT,
+    datasets: [
+      { label:'EBITDA Margin %', data:IS.ebitdaMargin.map(v=>parseFloat(v.toFixed(1))), borderColor:'#00e5a0', backgroundColor:'rgba(0,229,160,0.07)', tension:0.4, fill:true, pointBackgroundColor:'#00e5a0', pointRadius:3 },
+      { label:'Net Margin %',    data:IS.netMargin.map(v=>parseFloat(v.toFixed(1))),    borderColor:'#f5c518', backgroundColor:'rgba(245,197,24,0.05)', tension:0.4, fill:true, pointBackgroundColor:'#f5c518', pointRadius:3 },
+    ]
+  },
+  options: { ...CHART_DEFAULTS, scales:{x:sx, y:sy(v=>v+'%')}, plugins:pl }
+});
+
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cash Flow — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:24px;">
+        <div class="section-title" style="text-align:center; font-size:24px;">💵 Cash Flow Statement — IndiGo FY2024</div>
+        <div class="section-subtitle" style="text-align:center;">Consolidated Cash Flow Analysis based on Real FY2024 Audited Statements (₹ Crores)</div>
+      </div>
+
+      <div class="kpi-grid animate-in delay-1" style="grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;">
+        <div class="kpi-card blue" style="text-align:center;"><div class="kpi-accent"></div><div class="kpi-label" style="font-weight:700;">Operating Cash Flow (CFO)</div><div class="kpi-value" style="font-size:24px; font-weight:900;">₹21,200 Cr</div><div class="kpi-change up">▲ Record Operating Cash</div></div>
+        <div class="kpi-card red" style="text-align:center;"><div class="kpi-accent"></div><div class="kpi-label" style="font-weight:700;">Investing Cash Flow (CFI)</div><div class="kpi-value" style="font-size:24px; font-weight:900;">(₹11,800 Cr)</div><div class="kpi-change down">▼ Heavy Aircraft/Asset Capex</div></div>
+        <div class="kpi-card gold" style="text-align:center;"><div class="kpi-accent"></div><div class="kpi-label" style="font-weight:700;">Financing Cash Flow (CFF)</div><div class="kpi-value" style="font-size:24px; font-weight:900;">(₹10,000 Cr)</div><div class="kpi-change down">▼ Debt & Lease Obligations</div></div>
+        <div class="kpi-card green" style="text-align:center;"><div class="kpi-accent"></div><div class="kpi-label" style="font-weight:700;">Net Change in Cash (FY24)</div><div class="kpi-value" style="font-size:24px; font-weight:900;">(₹600 Cr)</div><div class="kpi-change down">▼ Due to high Investments</div></div>
+      </div>
+
+      <!-- Cash Flow Table -->
+      <div class="card animate-in delay-2" style="margin-bottom:24px; border-top:3px solid #00b4ff;">
+        <div class="card-header">
+          <div class="card-title" style="color:#00b4ff;">📋 Detailed Breakdown — Cash Flows (FY2024)</div>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;">
+          <table class="fin-table" id="cf-table" style="width:100%; font-size:14px;">
+            <thead>
+              <tr style="background:rgba(0,180,255,0.05); color:#7aaccc;">
+                <th style="width:60%;text-align:left; padding:12px;">Line Item</th>
+                <th style="width:40%;text-align:right; padding:12px;">Amount (₹ Cr)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="section-header" style="background:rgba(255,255,255,0.03); font-weight:bold; color:#FAFAFA;"><td colspan="2" style="padding:10px;">OPERATING ACTIVITIES</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Net Income (Record Profit)</td><td class="positive" style="text-align:right; padding:8px 10px;">8,172</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Depreciation & Amortization (Aircraft & Leases)</td><td class="positive" style="text-align:right; padding:8px 10px;">6,820</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Working Capital Adjustments (High Advance Tickets)</td><td class="positive" style="text-align:right; padding:8px 10px;">6,208</td></tr>
+              <tr class="subtotal" style="font-weight:800; border-top:1px solid rgba(255,255,255,0.1);"><td style="padding:10px;">Net Cash from Operating Activities (CFO)</td><td class="positive" style="text-align:right; padding:10px;">21,200</td></tr>
+
+              <tr class="section-header" style="background:rgba(255,255,255,0.03); font-weight:bold; color:#FAFAFA;"><td colspan="2" style="padding:10px;">INVESTING ACTIVITIES</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Capital Expenditures (Property, Plant, Equipment)</td><td class="negative" style="text-align:right; padding:8px 10px;">(4,200)</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Net Purchases of Investments & Other</td><td class="negative" style="text-align:right; padding:8px 10px;">(7,600)</td></tr>
+              <tr class="subtotal" style="font-weight:800; border-top:1px solid rgba(255,255,255,0.1);"><td style="padding:10px;">Net Cash from Investing Activities (CFI)</td><td class="negative" style="text-align:right; padding:10px;">(11,800)</td></tr>
+
+              <tr class="section-header" style="background:rgba(255,255,255,0.03); font-weight:bold; color:#FAFAFA;"><td colspan="2" style="padding:10px;">FINANCING ACTIVITIES</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Principal Payment of Lease Liabilities (IND AS 116)</td><td class="negative" style="text-align:right; padding:8px 10px;">(5,500)</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Interest Paid (Finance Costs)</td><td class="negative" style="text-align:right; padding:8px 10px;">(4,208)</td></tr>
+              <tr class="indent"><td style="padding:8px 10px; padding-left:24px;">Net Debt Repayments / Other</td><td class="negative" style="text-align:right; padding:8px 10px;">(292)</td></tr>
+              <tr class="subtotal" style="font-weight:800; border-top:1px solid rgba(255,255,255,0.1);"><td style="padding:10px;">Net Cash from Financing Activities (CFF)</td><td class="negative" style="text-align:right; padding:10px;">(10,000)</td></tr>
+
+              <tr class="section-header" style="background:rgba(255,255,255,0.03); font-weight:bold; color:#FAFAFA;"><td colspan="2" style="padding:10px;">CASH SUMMARY</td></tr>
+              <tr style="font-weight:800; border-top:2px solid #00b4ff; font-size:16px;"><td style="padding:12px; color:#FAFAFA;">Overall Net Change in Cash</td><td class="negative" style="text-align:right; padding:12px;">(600)</td></tr>
+              <tr class="total" style="font-weight:800; font-size:18px; color:#00e5a0;"><td style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.1);">Ending Cash Balance (Total Liquidity Buffer)</td><td class="positive" style="text-align:right; padding:12px; border-bottom:1px solid rgba(255,255,255,0.1);">34,737</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+  document.getElementById('sidebar-mount').innerHTML = buildSidebar('cash-flow.html');
+  document.getElementById('topbar-mount').innerHTML = buildTopbar('Cash Flow Statement', 'Consolidated Cash Flow · IndiGo FY2024');
+  document.getElementById('ticker').innerHTML = buildTicker();
+};
+</script>
+</body>
+</html>

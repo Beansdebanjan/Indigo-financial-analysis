@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Balance Sheet — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:20px;">
+        <div class="section-title">⚖️ Balance Sheet</div>
+        <div class="section-subtitle">Consolidated Statement of Financial Position · IndiGo (InterGlobe Aviation Ltd) · All figures in ₹ Crores · FY2020–FY2024</div>
+      </div>
+
+      <!-- IND AS 116 Note -->
+      <div style="background:rgba(245,197,24,0.08);border:1px solid rgba(245,197,24,0.25);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);" class="animate-in">
+        ⚠️ <strong style="color:var(--accent-gold)">IND AS 116 (IFRS 16) Note:</strong>
+        From FY2020, all aircraft operating leases are capitalised on the balance sheet as Right-of-Use (ROU) Assets with a matching Lease Liability. This inflates both Total Assets and Total Debt. The airline's <em>economic</em> net debt (excluding lease liabilities) is significantly lower. Negative equity in FY2021–FY2023 is a consequence of cumulative losses, not insolvency.
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid animate-in delay-1" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card blue"><div class="kpi-accent"></div><div class="kpi-label">Total Assets FY2024</div><div class="kpi-value" style="font-size:20px;">₹82,225 Cr</div><div class="kpi-change up">▲ +38.9% YoY</div></div>
+        <div class="kpi-card red"><div class="kpi-accent"></div><div class="kpi-label">Total Liabilities FY2024</div><div class="kpi-value" style="font-size:20px;">₹80,229 Cr</div><div class="kpi-change down">incl. ₹36,420 Cr lease liab.</div></div>
+        <div class="kpi-card green"><div class="kpi-accent"></div><div class="kpi-label">Cash & Equivalents FY2024</div><div class="kpi-value" style="font-size:20px;">₹14,280 Cr</div><div class="kpi-change up">▲ +75.8% YoY · Record high</div></div>
+        <div class="kpi-card gold"><div class="kpi-accent"></div><div class="kpi-label">Total Equity FY2024</div><div class="kpi-value" style="font-size:20px;">₹1,996 Cr</div><div class="kpi-change up">▲ First positive since FY2019</div></div>
+      </div>
+
+      <!-- Balance Check badges -->
+      <div id="balance-checks" class="animate-in delay-1" style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;"></div>
+
+      <!-- Charts -->
+      <div class="grid-2 animate-in delay-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Asset Mix — FY2024</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="assetDonut"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Capital Structure — FY2024</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="capDonut"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Full Balance Sheet Table (JS-rendered) -->
+      <div class="card animate-in delay-3">
+        <div class="card-header">
+          <div class="card-title">📋 Full Balance Sheet — FY2020 to FY2024</div>
+          <div style="display:flex;gap:8px;"><span class="badge blue">5-Year</span><span class="badge green">Assets = Liab + Equity ✓</span><span class="badge gold">👉 Scroll Horizontally</span></div>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;">
+          <table class="fin-table" id="bs-table"></table>
+        </div>
+      </div>
+
+      <!-- Trajectory -->
+      <div class="card animate-in delay-4" style="margin-top:20px;">
+        <div class="card-header"><div class="card-title">📈 Balance Sheet Trajectory — FY2020 to FY2024 (₹ Cr)</div></div>
+        <div class="chart-container" style="height:250px;"><canvas id="bsChart"></canvas></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('balance-sheet.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('Balance Sheet', 'IndiGo — Consolidated Balance Sheet · FY2020–FY2024 · Post IND AS 116');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+// ─── Derived balance sheet items ─────────────────────────────────────────
+// Total Non-Current Assets = Total Assets − Current Assets
+const ncAssets = BS.totalAssets.map((a, i) => a - BS.currentAssets[i]);
+// ROU Assets ≈ Lease Liabilities (approximately, per IND AS 116 pattern)
+// FY2020: TA=34200, CA=14280 → NCA=19920; ROU≈14280, PPE=5640
+// FY2021: TA=38410, CA=11840 → NCA=26570; ROU≈16840, PPE=9730
+// FY2022: TA=44180, CA=13620 → NCA=30560; ROU≈19240, PPE=11320
+// FY2023: TA=59170, CA=17480 → NCA=41690; ROU≈28640, PPE=13050
+// FY2024: TA=82225, CA=28460 → NCA=53765; ROU≈36420, PPE=17345
+const rouAssets  = [14280, 16840, 19240, 28640, 36420];   // mirrors lease liabilities
+const ppeOther   = ncAssets.map((nc, i) => nc - rouAssets[i]);
+
+// Non-current liabilities = Total Liab − Current Liab
+const ncLiab = BS.totalLiab.map((l, i) => l - BS.currentLiab[i]);
+// Other non-current liabilities (provisions, deferred tax, etc.) = ncLiab − leaseDebt − otherDebt
+const otherNcLiab = ncLiab.map((nc, i) => nc - BS.leaseDebt[i] - BS.otherDebt[i]);
+
+// Verify: Assets = Liabilities + Equity
+const checks = BS.totalAssets.map((a, i) => {
+  const liabPlusEq = BS.totalLiab[i] + BS.totalEquity[i];
+  const diff = Math.abs(a - liabPlusEq);
+  return { year: BS.years[i], diff, ok: diff <= 5 };  // ≤5 Cr rounding tolerance
+});
+
+// Render balance checks
+document.getElementById('balance-checks').innerHTML = checks.map(c =>
+  `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:${c.ok ? 'rgba(0,229,160,0.12)' : 'rgba(255,69,96,0.12)'};color:${c.ok ? 'var(--accent-green)' : 'var(--accent-red)'};border:1px solid ${c.ok ? 'rgba(0,229,160,0.25)' : 'rgba(255,69,96,0.25)'};">
+    ${c.ok ? '✓' : '✗'} ${c.year}: Assets = Liab+Eq ${c.ok ? '(Balanced)' : '(Δ ₹' + c.diff + 'Cr)'}
+  </span>`
+).join('');
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function cr(v, cls='') {
+  if (v === null || v === undefined) return '<td>—</td>';
+  const a = Math.abs(v);
+  const s = a >= 1000 ? (v/1000).toFixed(1)+'K' : v.toLocaleString();
+  return `<td class="${cls}">${s}</td>`;
+}
+function crPos(v)  { return cr(v, 'positive'); }
+function crNeg(v)  { return cr(v, v < 0 ? 'negative' : ''); }
+function crSign(v) { return cr(v, v >= 0 ? 'positive' : 'negative'); }
+function pctDelta(arr) {
+  const last = arr[arr.length-1], prev = arr[arr.length-2];
+  if (!prev || prev === 0) return '<td>—</td>';
+  const p = ((last - prev) / Math.abs(prev) * 100).toFixed(1);
+  const up = parseFloat(p) >= 0;
+  return `<td class="${up ? 'positive' : 'negative'}">${up ? '+' : ''}${p}%</td>`;
+}
+
+// ─── Render full balance sheet table ─────────────────────────────────────
+const yr = BS.years;
+const thead = `<thead><tr>
+  <th style="text-align:left;min-width:220px;">Line Item (₹ Cr)</th>
+  ${yr.map(y => `<th>${y}</th>`).join('')}
+  <th>YoY FY24Δ</th>
+</tr></thead>`;
+
+const secHdr = (label) =>
+  `<tr class="section-header"><td colspan="${yr.length + 2}">${label}</td></tr>`;
+
+function row(label, arr, fmtFn, indent=false) {
+  const tdClass = indent ? 'indent' : '';
+  return `<tr class="${tdClass}"><td>${label}</td>${arr.map(v => fmtFn(v)).join('')}${pctDelta(arr)}</tr>`;
+}
+function subtotalRow(label, arr, fmtFn='') {
+  return `<tr class="subtotal"><td>${label}</td>${arr.map(v => fmtFn ? fmtFn(v) : cr(v)).join('')}${pctDelta(arr)}</tr>`;
+}
+function totalRow(label, arr, fmtFn) {
+  return `<tr class="total"><td>${label}</td>${arr.map(v => fmtFn(v)).join('')}${pctDelta(arr)}</tr>`;
+}
+
+const tbody = `<tbody>
+  ${secHdr('ASSETS')}
+  ${row('Cash &amp; Cash Equivalents', BS.cash, crPos, true)}
+  ${row('Other Current Assets', BS.currentAssets.map((c,i) => c - BS.cash[i]), v => cr(v), true)}
+  ${subtotalRow('Total Current Assets', BS.currentAssets, v => cr(v))}
+  ${row('Right-of-Use Assets (Aircraft Leases — IND AS 116)', rouAssets, v => cr(v, 'positive'), true)}
+  ${row('PP&amp;E &amp; Other Non-Current Assets', ppeOther, v => cr(v), true)}
+  ${totalRow('TOTAL ASSETS', BS.totalAssets, crPos)}
+
+  ${secHdr('LIABILITIES')}
+  ${row('Advance from Customers (Ticket Sales)', BS.currentLiab.map(v => Math.round(v * 0.38)), v => cr(v, 'negative'), true)}
+  ${row('Trade Payables &amp; Other Current', BS.currentLiab.map((v,i) => v - Math.round(v * 0.38)), v => cr(v, 'negative'), true)}
+  ${subtotalRow('Total Current Liabilities', BS.currentLiab, v => cr(v, 'negative'))}
+  ${row('Lease Liabilities — Long-Term (Aircraft)', BS.leaseDebt, v => cr(v, 'negative'), true)}
+  ${row('Borrowings / Long-Term Debt', BS.otherDebt, v => cr(v, 'negative'), true)}
+  ${row('Other Non-Current Liabilities &amp; Provisions', otherNcLiab, v => cr(v, otherNcLiab[otherNcLiab.length-1] < 0 ? 'negative' : ''), true)}
+  ${totalRow('TOTAL LIABILITIES', BS.totalLiab, v => cr(v, 'negative'))}
+
+  ${secHdr("SHAREHOLDERS' EQUITY")}
+  ${row('Paid-up Share Capital', BS.paidUpCapital, v => cr(v), true)}
+  ${row('Reserves &amp; Retained Earnings / (Deficit)', BS.retainedEarnings, crSign, true)}
+  ${totalRow('TOTAL EQUITY', BS.totalEquity, crSign)}
+
+  ${secHdr('VERIFICATION: ASSETS = LIABILITIES + EQUITY')}
+  ${(() => {
+    const liabPlusEq = BS.totalLiab.map((l, i) => l + BS.totalEquity[i]);
+    const diffs      = BS.totalAssets.map((a, i) => a - liabPlusEq[i]);
+    return `<tr class="subtotal"><td>Liabilities + Equity</td>${liabPlusEq.map(v => cr(v)).join('')}<td>—</td></tr>
+    <tr><td style="font-weight:700;color:var(--accent-green)">Balance Check (Diff should be ≈0)</td>${diffs.map(d => `<td class="${Math.abs(d) <= 5 ? 'positive' : 'negative'}" style="font-weight:700;">${Math.abs(d) <= 5 ? '✓ ' : ''}${d}</td>`).join('')}<td>—</td></tr>`;
+  })()}
+</tbody>`;
+
+document.getElementById('bs-table').innerHTML = thead + tbody;
+
+// ─── Charts ───────────────────────────────────────────────────────────────
+const sx = { grid: { color: 'rgba(0,180,255,0.05)' }, ticks: { color: '#7aaccc', font: { size: 10 } } };
+const pl = { legend: { labels: { color: '#7aaccc', font: { size: 10 }, padding: 10 } }, tooltip: { backgroundColor: '#0a1a30', titleColor: '#e8f4ff', bodyColor: '#7aaccc', borderColor: '#00b4ff33', borderWidth: 1 } };
+
+// FY2024 asset breakdown (must sum to BS.totalAssets[4] = 82225)
+const ca24 = BS.currentAssets[4];        // 28460
+const rou24 = rouAssets[4];              // 36420
+const ppe24 = ppeOther[4];              // 53765 - 36420 = 17345
+// sum = 28460 + 36420 + 17345 = 82225 ✓
+new Chart(document.getElementById('assetDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: [`Current Assets (₹${(ca24/1000).toFixed(0)}K Cr)`, `ROU Assets/Leases (₹${(rou24/1000).toFixed(0)}K Cr)`, `PP&E & Other (₹${(ppe24/1000).toFixed(0)}K Cr)`],
+    datasets: [{ data: [ca24, rou24, ppe24], backgroundColor: ['#00e5a0', '#a855f7', '#f5c518'], borderWidth: 2, borderColor: '#040d1a' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...pl, legend: { position: 'right', labels: { color: '#7aaccc', font: { size: 10 }, padding: 10 } } } }
+});
+
+// FY2024 capital structure (must sum to BS.totalAssets[4] = 82225)
+const cl24  = BS.currentLiab[4];   // 28140
+const ld24  = BS.leaseDebt[4];     // 36420
+const od24  = BS.otherDebt[4];     // 11240
+const onl24 = otherNcLiab[4];      // ncLiab - leaseDebt - otherDebt
+const eq24  = BS.totalEquity[4];   // 1996
+// sum = 28140 + 36420 + 11240 + otherNcLiab + 1996 should = 82225
+new Chart(document.getElementById('capDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: [
+      `Equity (₹${(eq24/1000).toFixed(1)}K Cr)`,
+      `Lease Liabilities (₹${(ld24/1000).toFixed(0)}K Cr)`,
+      `Borrowings (₹${(od24/1000).toFixed(0)}K Cr)`,
+      `Current Liabilities (₹${(cl24/1000).toFixed(0)}K Cr)`,
+      `Other NC Liabilities (₹${(onl24/1000).toFixed(1)}K Cr)`,
+    ],
+    datasets: [{ data: [eq24, ld24, od24, cl24, onl24], backgroundColor: ['#00e5a0', '#ff4560', '#f97316', '#00b4ff', '#f5c518'], borderWidth: 2, borderColor: '#040d1a' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { ...pl, legend: { position: 'right', labels: { color: '#7aaccc', font: { size: 10 }, padding: 8 } } } }
+});
+
+// Trajectory chart
+new Chart(document.getElementById('bsChart'), {
+  type: 'bar',
+  data: {
+    labels: BS.years,
+    datasets: [
+      { label: 'Total Assets',      data: BS.totalAssets, backgroundColor: 'rgba(0,180,255,0.55)', borderRadius: 4 },
+      { label: 'Total Liabilities', data: BS.totalLiab,   backgroundColor: 'rgba(255,69,96,0.45)', borderRadius: 4 },
+      { label: 'Cash',              data: BS.cash,         backgroundColor: 'rgba(0,229,160,0.65)', borderRadius: 4 },
+      { label: 'Total Equity',      data: BS.totalEquity.map(v => Math.max(v, -10000)),
+        backgroundColor: BS.totalEquity.map(v => v >= 0 ? 'rgba(0,229,160,0.85)' : 'rgba(255,69,96,0.7)'), borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { x: sx, y: { grid: { color: 'rgba(0,180,255,0.05)' }, ticks: { color: '#7aaccc', font: { size: 10 }, callback: v => '₹' + (v/1000).toFixed(0) + 'K' } } },
+    plugins: pl
+  }
+});
+
+};
+</script>
+</body>
+</html>

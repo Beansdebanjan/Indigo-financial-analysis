@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IB Research Report — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .param-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+      transition: var(--transition);
+    }
+    .param-block:hover { border-left-color: var(--accent-green); box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+    .param-block.green  { border-left-color: var(--accent-green); }
+    .param-block.gold   { border-left-color: var(--accent-gold); }
+    .param-block.red    { border-left-color: var(--accent-red); }
+    .param-block.purple { border-left-color: var(--accent-purple); }
+
+    .param-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+    .param-name  { font-size:15px; font-weight:800; color:var(--text-primary); }
+    .param-value { font-size:22px; font-weight:900; font-family:'JetBrains Mono',monospace; }
+    .param-formula { font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--accent-blue); background:rgba(0,180,255,0.08); padding:4px 10px; border-radius:4px; margin-bottom:10px; }
+
+    .analysis-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:8px; }
+    .analysis-box { background:rgba(0,0,0,0.25); border-radius:var(--radius-sm); padding:12px 14px; }
+    .analysis-box-title { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:6px; }
+    .analysis-box-val  { font-size:13px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+    .insight { font-size:13px; color:var(--text-secondary); line-height:1.75; margin-top:10px; }
+    .insight strong { color:var(--text-primary); }
+    .insight .hi-green { color:var(--accent-green); font-weight:700; }
+    .insight .hi-red   { color:var(--accent-red);   font-weight:700; }
+    .insight .hi-gold  { color:var(--accent-gold);  font-weight:700; }
+    .insight .hi-blue  { color:var(--accent-blue);  font-weight:700; }
+
+    .tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .tag { display:inline-block; padding:2px 10px; border-radius:14px; font-size:10px; font-weight:700; letter-spacing:0.5px; }
+    .tag-good { background:rgba(0,229,160,0.12); color:var(--accent-green); }
+    .tag-bad  { background:rgba(255,69,96,0.12); color:var(--accent-red); }
+    .tag-warn { background:rgba(245,197,24,0.12); color:var(--accent-gold); }
+    .tag-info { background:rgba(0,180,255,0.12); color:var(--accent-blue); }
+
+    .category-header {
+      font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:2px;
+      color:var(--text-primary); margin:28px 0 16px;
+      padding:10px 0 10px 16px;
+      border-left:3px solid var(--accent-blue);
+      background:linear-gradient(90deg,rgba(0,180,255,0.06),transparent);
+    }
+    .mini-chart-wrap { height:100px; margin-top:12px; }
+    .indigo-verdict { padding:14px 18px; border-radius:var(--radius-sm); margin-top:12px; font-size:12px; line-height:1.7; }
+    .verdict-bull { background:rgba(0,229,160,0.07); border:1px solid rgba(0,229,160,0.2); color:var(--text-secondary); }
+    .verdict-bear { background:rgba(255,69,96,0.07); border:1px solid rgba(255,69,96,0.2); color:var(--text-secondary); }
+    .verdict-neutral { background:rgba(245,197,24,0.07); border:1px solid rgba(245,197,24,0.2); color:var(--text-secondary); }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <!-- Report Header -->
+      <div class="animate-in" style="margin-bottom:24px;">
+        <div style="font-size:10px;letter-spacing:3px;color:var(--text-muted);margin-bottom:6px;">INVESTMENT BANKING EQUITY RESEARCH REPORT</div>
+        <div class="section-title">🧠 IndiGo — Deep Parameter Analysis</div>
+        <div class="section-subtitle">InterGlobe Aviation Ltd · NSE: INDIGO · Every financial metric explained with IndiGo context, formula, industry benchmarks & analyst interpretation · FY2024 data</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+          <span class="badge green">BUY — Consensus</span>
+          <span class="badge gold">Target: ₹5,800</span>
+          <span class="badge blue">CMP: ₹5,048</span>
+          <span class="badge blue">Upside: +14.9%</span>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 1: INCOME STATEMENT PARAMETERS -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="category-header">📈 Section 1 — Income Statement Parameters</div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">① Total Revenue (Net Revenue)</div>
+            <div class="param-formula">Revenue = Passenger Revenue + Ancillary Revenue + Cargo + Charter Fees</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹71,230 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FY2024 Value</div><div class="analysis-box-val" style="color:var(--accent-green)">₹71,230 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">YoY Growth</div><div class="analysis-box-val" style="color:var(--accent-green)">▲ +30.8%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">15Y CAGR (FY11–FY24)</div><div class="analysis-box-val" style="color:var(--accent-blue)">23.4%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Total income IndiGo earns from flying passengers, charging ancillary fees (seat selection, baggage, meals), cargo operations, and wet-lease income. About <span class="hi-green">~90%</span> comes from passenger fares.<br><br>
+          <strong>IndiGo Context:</strong> Revenue grew from ₹3,480 Cr in FY2011 to ₹71,230 Cr in FY2024 — a <span class="hi-green">20.5x</span> increase in 13 years. The COVID collapse (FY2021: ₹16,201 Cr, -55%) was fully recovered by FY2023. The <span class="hi-blue">₹54,447 Cr → ₹71,230 Cr (+30.8%)</span> jump in FY2024 was driven by record passenger volumes (101.5M) and higher average fares (RASK: ₹5.24 vs ₹4.82 in FY2023).<br><br>
+          <strong>IB Significance:</strong> Revenue per aircraft (₹192 Cr/plane) is a key productivity metric. IndiGo's revenue CAGR of 23.4% over 15 years justifies its valuation premium over global LCCs.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">Record FY2024</span><span class="tag tag-good">15Y CAGR 23.4%</span><span class="tag tag-info">India aviation underpenetrated → secular growth</span></div>
+      </div>
+
+      <div class="param-block gold">
+        <div class="param-header">
+          <div>
+            <div class="param-name">② Fuel Expense (Largest Cost Driver)</div>
+            <div class="param-formula">Fuel % of Revenue = (ATF consumed × price/litre) / Total Revenue × 100</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-red)">₹26,180 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">% of Revenue FY2024</div><div class="analysis-box-val" style="color:var(--accent-red)">36.7%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FY2019 Peak (crisis year)</div><div class="analysis-box-val" style="color:var(--accent-red)">47.7%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Peer avg (global)</div><div class="analysis-box-val">~30-40%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Aviation Turbine Fuel (ATF) is IndiGo's #1 cost. India levies high state VAT on ATF (5–25% depending on state), unlike most countries where it's zero-rated — a structural disadvantage for Indian carriers.<br><br>
+          <strong>IndiGo Context:</strong> FY2019 was the crisis year — ATF prices surged +50% while IndiGo's revenue grew only 24%. Fuel hit <span class="hi-red">47.7% of revenue</span>, turning EBITDA negative. In FY2024, fuel is 36.7% — still high but moderated by Brent crude coming off highs. IndiGo's fleet of <span class="hi-green">A320neo/321neo uses 15-20% less fuel</span> than older A320ceo aircraft — its neo transition is a key structural cost reducer.<br><br>
+          <strong>IB Significance:</strong> Every $1/barrel change in crude oil changes IndiGo's fuel bill by ~₹300-400 Cr annually. Analysts model fuel sensitivity as a key risk scenario.
+        </div>
+        <div class="tag-row"><span class="tag tag-warn">Key Risk: Crude oil price</span><span class="tag tag-good">Neo fleet = fuel efficiency</span><span class="tag tag-bad">India ATF VAT: structural disadvantage</span></div>
+      </div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">③ EBITDA — Earnings Before Interest, Tax, Depreciation & Amortisation</div>
+            <div class="param-formula">EBITDA = Revenue − Operating Expenses (ex. Dep, Interest, Tax)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹16,293 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">EBITDA Margin FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">22.9%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Peak Margin (FY2016)</div><div class="analysis-box-val">18.7%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">COVID Low (FY2021)</div><div class="analysis-box-val" style="color:var(--accent-red)">-0.2%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> EBITDA is the "operating cash" a business generates before accounting for financing (interest), non-cash (depreciation), and government (tax) items. For airlines, EBITDAR (adding back lease rent) is also commonly used to remove lease accounting distortions.<br><br>
+          <strong>IndiGo Context:</strong> FY2024's <span class="hi-green">22.9% EBITDA margin</span> is the highest ever — surpassing the pre-COVID peak of 18.7% (FY2016). This extraordinary improvement resulted from: (1) record load factor (87%), (2) higher yield/RASK, (3) fleet utilisation recovery, and (4) operating leverage (fixed costs spread over more passengers). The swing from <span class="hi-red">-0.2% (FY2021)</span> to 22.9% in just 3 years is remarkable, driven by pent-up travel demand (revenge travel).<br><br>
+          <strong>IB Significance:</strong> EV/EBITDA is the primary valuation multiple for airlines. IndiGo trades at 11.9x EV/EBITDA vs peer median of 6.2x — justified by superior margins and India growth.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">Best-in-class India aviation</span><span class="tag tag-good">22.9% vs FY16 peak 18.7%</span><span class="tag tag-info">Key valuation anchor: EV/EBITDA = 11.9x</span></div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-header">
+          <div>
+            <div class="param-name">④ Depreciation & Amortisation (D&A)</div>
+            <div class="param-formula">D&A = Owned Asset Depreciation + Right-of-Use Asset Amortisation (IND AS 116)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-blue)">₹6,820 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FY2024 D&A</div><div class="analysis-box-val">₹6,820 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">% of Revenue</div><div class="analysis-box-val">9.6%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FY2019 D&A (pre-IAS116)</div><div class="analysis-box-val">₹1,680 Cr</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Non-cash charge representing the wearing-down of assets over time. For IndiGo, the massive ₹6,820 Cr D&A in FY2024 is primarily <strong>ROU Asset amortisation</strong> — the accounting write-down of lease rights under IND AS 116 (similar to IFRS 16). Pre-IND AS 116, D&A was only ₹1,680 Cr.<br><br>
+          <strong>IndiGo Context:</strong> The D&A jump from ₹1,680 Cr (FY2019) to ₹6,820 Cr (FY2024) is almost entirely an <span class="hi-gold">accounting change, not a real cash outflow</span>. It creates a large gap between EBIT and EBITDA. Analysts look at EBITDA (before D&A) for operational performance and add back D&A for free cash flow computation.<br><br>
+          <strong>IB Significance:</strong> Non-cash item, so it bridges EBITDA to EBIT, and also improves FCF vs net income (FCF adds back D&A).
+        </div>
+        <div class="tag-row"><span class="tag tag-info">Mostly non-cash (accounting artifact)</span><span class="tag tag-warn">IND AS 116 inflated D&A 4x since FY2019</span></div>
+      </div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑤ Net Income (Profit After Tax)</div>
+            <div class="param-formula">Net Income = EBIT − Interest Expense + Other Income − Tax</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹8,173 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">Net Margin FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">11.5%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">3-Year Losses (FY21-23)</div><div class="analysis-box-val" style="color:var(--accent-red)">₹12,274 Cr lost</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">EPS FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">₹211.7</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The "bottom line" — what shareholders ultimately own. After paying all expenses, interest, and taxes.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo lost a cumulative <span class="hi-red">₹12,274 Cr over FY2021–FY2023</span> due to COVID and high interest costs on capitalised lease liabilities. The <span class="hi-green">₹8,173 Cr net profit in FY2024</span> is the highest quarterly profit for any Indian airline ever. Key drivers: (1) record revenue, (2) improved EBITDA margin, (3) deferred tax asset recognition (unrecognised losses being absorbed). FY2024's 11.5% net margin compares to FY2016's 11.9% peak.<br><br>
+          <strong>IB Significance:</strong> P/E ratio uses net income. P/E of 23.8x vs peers (13-45x range) reflects growth expectations. Adjusted earnings (ex. deferred tax items) more accurately reflect run-rate profitability.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">First major profit year post-COVID</span><span class="tag tag-good">EPS ₹211.7 vs (₹7.9) in FY2023</span><span class="tag tag-info">Deferred tax benefit boosted FY2024 PAT</span></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 2: BALANCE SHEET PARAMETERS -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="category-header">⚖️ Section 2 — Balance Sheet Parameters</div>
+
+      <div class="param-block">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑥ Right-of-Use (ROU) Assets</div>
+            <div class="param-formula">ROU Asset = Present Value of All Future Lease Payments (IND AS 116)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-purple)">₹36,420 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FY2024 ROU Assets</div><div class="analysis-box-val" style="color:var(--accent-purple)">₹36,420 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">% of Total Assets</div><div class="analysis-box-val">44.3%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Corresponding Liab</div><div class="analysis-box-val" style="color:var(--accent-red)">₹36,420 Cr</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Under IND AS 116 (effective April 2019), airlines must capitalise all aircraft operating leases. The "Right-of-Use Asset" represents the economic right to fly leased aircraft for the contract term, discounted to present value.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo owns ZERO aircraft. All 370 aircraft are leased. This creates a <span class="hi-purple">₹36,420 Cr ROU asset</span> — the single largest item on the balance sheet (44.3% of total assets). This is matched by an equal lease liability. The net economic impact on shareholders is <span class="hi-gold">zero</span> — it's an accounting mirror image. Pre-IND-AS-116, IndiGo's balance sheet was a fraction of the current size.<br><br>
+          <strong>IB Significance:</strong> Analysts adjust balance sheets to remove ROU assets and lease liabilities for true leverage analysis. "Adjusted Net Debt" (ex-lease) gives a cleaner picture of financial health.
+        </div>
+        <div class="tag-row"><span class="tag tag-info">Accounting artifact — no cash impact</span><span class="tag tag-good">Asset-light: 0 aircraft owned</span><span class="tag tag-warn">Inflates D/E ratio to 25.7x (meaningless)</span></div>
+      </div>
+
+      <div class="param-block red">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑦ Negative Shareholders' Equity (FY2021–FY2023)</div>
+            <div class="param-formula">Equity = Paid-up Capital + Retained Earnings/Deficit</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹1,996 Cr (FY2024)</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FY2021 Equity</div><div class="analysis-box-val" style="color:var(--accent-red)">(₹5,870 Cr)</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FY2022 Equity</div><div class="analysis-box-val" style="color:var(--accent-red)">(₹7,660 Cr)</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FY2024 Equity</div><div class="analysis-box-val" style="color:var(--accent-green)">+₹1,996 Cr ✓</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> When cumulative losses exceed paid-up capital + all prior retained earnings, total equity becomes negative. The company technically owes more than it owns — on paper.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo's equity turned negative in FY2021 (₹5,806 Cr loss) and stayed negative through FY2023. But this <span class="hi-gold">does NOT mean IndiGo was insolvent</span>. The company had ₹8,120 Cr of cash in FY2023 and was generating positive operating cash flows. The losses were partly non-cash (IND AS 116 depreciation). Equity turned positive in FY2024 with ₹8,173 Cr net profit wiping out the deficit. <span class="hi-green">This is textbook V-shaped recovery</span>.<br><br>
+          <strong>IB Significance:</strong> Negative equity makes traditional P/B ratio meaningless. Analysts use EV/EBITDA, EV/Revenue instead. ROE (409%) is also distorted and should be ignored.
+        </div>
+        <div class="tag-row"><span class="tag tag-warn">Negative equity FY21-23 (non-solvency event)</span><span class="tag tag-good">Equity positive FY2024: ₹1,996 Cr</span><span class="tag tag-info">Use EV multiples, not P/B, for valuation</span></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 3: CASH FLOW PARAMETERS -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="category-header">💵 Section 3 — Cash Flow Parameters</div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑧ Operating Cash Flow (CFO)</div>
+            <div class="param-formula">CFO = Net Income + D&A + Working Capital Changes + Non-Cash Items</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹18,640 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">CFO FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">₹18,640 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">CFO FY2021 (COVID)</div><div class="analysis-box-val" style="color:var(--accent-gold)">₹2,180 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Cash Conv. Ratio</div><div class="analysis-box-val" style="color:var(--accent-green)">2.28x</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Cash actually generated from running the airline. This is more reliable than net income because it includes non-cash add-backs (D&A) and working capital movements.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo's <span class="hi-green">₹18,640 Cr CFO</span> is 2.28x net income — indicating very high cash quality. Key reason: IndiGo collects cash BEFORE providing the service (advance ticket sales reduce debtors days to near-zero). This negative working capital model is a structural cash generation advantage. Even during COVID (FY2021), IndiGo generated <span class="hi-gold">₹2,180 Cr CFO</span> — positive despite ₹5,806 Cr net loss — due to D&A add-back.<br><br>
+          <strong>IB Significance:</strong> CFO > Net Income = high earnings quality. Airlines with negative working capital (like IndiGo) generate more cash than their income statements suggest.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">Cash conversion 2.28x NI</span><span class="tag tag-good">Negative working capital model</span><span class="tag tag-info">Advance ticket sales = structural cash advantage</span></div>
+      </div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑨ Free Cash Flow (FCF)</div>
+            <div class="param-formula">FCF = CFO − Capital Expenditures (maintenance + owned asset purchases)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">₹14,360 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FCF FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">₹14,360 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FCF Margin</div><div class="analysis-box-val" style="color:var(--accent-green)">20.2%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">FCF Yield</div><div class="analysis-box-val" style="color:var(--accent-green)">7.4%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> Cash left after maintaining/growing the business. This is what's available for debt repayment, dividends, buybacks, or acquisitions.<br><br>
+          <strong>IndiGo Context:</strong> ₹14,360 Cr FCF is extraordinary for an airline. FCF/EBITDA of 88% indicates very high capital efficiency — IndiGo spends very little on owned assets (CapEx only ₹4,280 Cr = 6% of revenue) because its <span class="hi-green">asset-light model (leased fleet)</span> eliminates aircraft purchase costs. Compare to Ryanair (owns aircraft — much higher CapEx). FCF yield of <span class="hi-green">7.4%</span> implies buying IndiGo at CMP pays back in ~13.5 years from free cash alone.<br><br>
+          <strong>IB Significance:</strong> DCF models discount future FCFs to arrive at intrinsic value. High FCF + low CapEx = high intrinsic value. IndiGo's 20.2% FCF margin is exceptional for an airline.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">FCF margin 20.2% — exceptional</span><span class="tag tag-good">Asset-light = low CapEx</span><span class="tag tag-info">FCF underpins DCF valuation</span></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 4: AIRLINE-SPECIFIC KPIs -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="category-header">✈️ Section 4 — Airline-Specific Parameters (Aviation KPIs)</div>
+
+      <div class="param-block">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑩ RASK — Revenue per Available Seat Kilometre</div>
+            <div class="param-formula">RASK = Total Revenue / (Available Seats × Distance Flown in Km)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-blue)">₹5.24/ASK</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">RASK FY2024</div><div class="analysis-box-val" style="color:var(--accent-blue)">₹5.24</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">RASK FY2021 (COVID)</div><div class="analysis-box-val" style="color:var(--accent-red)">₹2.84</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">RASK FY2016</div><div class="analysis-box-val">₹3.52</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> How much revenue IndiGo earns per seat per kilometre flown — the top-line unit economics. Higher RASK = better revenue productivity from each seat offered.<br><br>
+          <strong>IndiGo Context:</strong> RASK recovered strongly from the COVID low of ₹2.84 (FY2021) to <span class="hi-blue">₹5.24 (FY2024)</span>. Drivers: (1) <span class="hi-green">87% load factor</span> (fewer empty seats), (2) higher average fare (revenge travel), (3) international route expansion (higher-yielding routes), (4) ancillary revenue growth (IndiGo BluChip meals, seat upgrades). RASK is the numerator in the critical RASK-CASK profitability spread.<br><br>
+          <strong>IB Significance:</strong> If RASK > total CASK (including fuel), the airline is profitable per ASK. IndiGo's spread of ₹0.58/ASK (FY2024) represents profitability per seat-km flown.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">+84.5% recovery from COVID low</span><span class="tag tag-good">International mix improving RASK</span><span class="tag tag-info">RASK benchmark: European LCCs at €0.07-0.09</span></div>
+      </div>
+
+      <div class="param-block gold">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑪ CASK — Cost per Available Seat Kilometre (ex-fuel)</div>
+            <div class="param-formula">CASK = (Total Costs − Fuel Costs) / (Available Seats × Distance Flown)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-gold)">₹2.66/ASK</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">CASK ex-fuel FY2024</div><div class="analysis-box-val" style="color:var(--accent-gold)">₹2.66</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">CASK FY2011 (high)</div><div class="analysis-box-val" style="color:var(--accent-red)">₹3.10</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">CASK FY2016 (best)</div><div class="analysis-box-val" style="color:var(--accent-green)">₹2.01</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The cost efficiency metric that removes the uncontrollable fuel variable, showing how efficiently management runs the airline. Lower CASK ex-fuel = more cost-efficient airline.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo achieved its all-time low CASK of <span class="hi-green">₹2.01/ASK in FY2016</span> — a benchmark for Indian aviation. This was driven by: operational scale, high utilisation (aircraft flying 14+ hours/day), single aircraft type (A320 family only — fewer spare parts, simpler training). The rise to ₹2.66 in FY2024 reflects salary inflation and new route costs. FY2016's CASK advantage was the golden era of margins (18.7% EBITDA).<br><br>
+          <strong>IB Significance:</strong> CASK is the denominator of efficiency. Ryanair's CASK excl. fuel is ~€0.03 — the global benchmark. IndiGo at ₹2.66 (~€0.028) is competitive globally.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">Single fleet type = cost discipline</span><span class="tag tag-warn">Rising from FY2016 low of ₹2.01</span><span class="tag tag-good">Globally competitive vs Ryanair</span></div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑫ Load Factor</div>
+            <div class="param-formula">Load Factor = Revenue Passenger Kilometres (RPK) / Available Seat Kilometres (ASK) × 100</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">87.0%</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">FY2024 Load Factor</div><div class="analysis-box-val" style="color:var(--accent-green)">87.0%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">COVID Low (FY2021)</div><div class="analysis-box-val" style="color:var(--accent-red)">64.8%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Break-even est.</div><div class="analysis-box-val">~82-84%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The percentage of available seats actually occupied by paying passengers. Think of it as the "occupancy rate" for airlines. Airlines typically need 75-80% load factor just to cover variable costs.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo's <span class="hi-green">87.0% load factor in FY2024</span> means only 13 of 100 seats fly empty — extremely efficient. During COVID (FY2021), it crashed to <span class="hi-red">64.8%</span>, making every flight deeply unprofitable. IndiGo's ability to maintain 84-87% load factors consistently (FY2015-2020 pre-COVID) reflects strong yield management systems, India's growing middle class demand, and disciplined capacity management.<br><br>
+          <strong>IB Significance:</strong> Each 1% improvement in load factor at IndiGo's scale adds ~₹500-700 Cr of revenue at near-zero marginal cost (the seat was going to fly anyway).
+        </div>
+        <div class="tag-row"><span class="tag tag-good">87% — industry best for India</span><span class="tag tag-good">Above 85% break-even threshold</span><span class="tag tag-info">1% improvement = ~₹600 Cr incremental revenue</span></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 5: VALUATION PARAMETERS -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="category-header">🏦 Section 5 — Valuation & Market Parameters</div>
+
+      <div class="param-block gold">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑬ Enterprise Value (EV)</div>
+            <div class="param-formula">EV = Market Cap + Total Debt − Cash & Equivalents (ex. lease debt for airlines)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-gold)">₹1,94,557 Cr</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">Market Cap</div><div class="analysis-box-val">₹1,94,557 Cr</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">EV/EBITDA</div><div class="analysis-box-val" style="color:var(--accent-gold)">11.9x</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Peer Median EV/EBITDA</div><div class="analysis-box-val" style="color:var(--accent-red)">6.2x</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The theoretical total price to buy the entire company — what an acquirer would pay including inherited debt but recovering cash. EV is the most neutral measure for comparing companies with different capital structures.<br><br>
+          <strong>IndiGo Context:</strong> At <span class="hi-gold">EV/EBITDA of 11.9x</span>, IndiGo trades at nearly <span class="hi-red">2x its global LCC peers</span> (Ryanair 6.2x, easyJet 4.8x, Southwest 5.5x). This premium is justified by: (1) India's secular aviation growth story (0.1 trips/capita vs 2.5 in USA), (2) IndiGo's unassailable 63.6% market share moat, (3) superior margins, (4) $5B+ aircraft order book showing growth visibility. The premium is <span class="hi-green">emerging market premium + market leader premium</span>.<br><br>
+          <strong>IB Significance:</strong> EV/EBITDA is the primary airline valuation multiple used in IB. A re-rating to 14-15x (still below India tech premiums) implies 20-25% upside.
+        </div>
+        <div class="tag-row"><span class="tag tag-warn">11.9x vs peer 6.2x — India premium justified</span><span class="tag tag-good">Growth premium: India 0.1 trips/capita</span><span class="tag tag-info">Re-rating potential if margins sustain</span></div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑭ WACC — Weighted Average Cost of Capital</div>
+            <div class="param-formula">WACC = (E/V × Re) + (D/V × Rd × (1-T)) &nbsp;|&nbsp; Used as DCF discount rate</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-blue)">12.5%</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">Risk-Free Rate (10Y G-Sec)</div><div class="analysis-box-val">6.82%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Equity Risk Premium</div><div class="analysis-box-val">5.5%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">IndiGo Beta (5Y)</div><div class="analysis-box-val">1.15</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The minimum return IndiGo must earn to satisfy both debt and equity investors. Below this rate, the company destroys shareholder value. Used as the <strong>discount rate in DCF models</strong>.<br><br>
+          <strong>IndiGo Context:</strong> IndiGo's WACC of <span class="hi-blue">12.5%</span> is higher than US airlines (~8-9%) due to: (1) <span class="hi-gold">India's higher risk-free rate</span> (6.82% G-Sec vs ~4.3% UST), (2) aviation sector risk premium, (3) IndiGo's higher financial leverage (lease-adjusted debt). Since IndiGo's ROIC (17.8%) > WACC (12.5%), IndiGo is creating <span class="hi-green">+530bps of value spread</span> — a strongly value-accretive business.<br><br>
+          <strong>IB Significance:</strong> WACC is the denominator in all DCF terminal value calculations. A 1% increase in WACC reduces IndiGo's intrinsic value by ~₹8,000-10,000 Cr.
+        </div>
+        <div class="tag-row"><span class="tag tag-info">WACC 12.5% — India aviation specific</span><span class="tag tag-good">ROIC (17.8%) > WACC (12.5%) ✓</span><span class="tag tag-warn">Higher than global peers due to India risk-free rate</span></div>
+      </div>
+
+      <div class="param-block green">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑮ ROIC — Return on Invested Capital</div>
+            <div class="param-formula">ROIC = NOPAT / (Total Equity + Total Debt − Excess Cash)</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-green)">17.8%</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">ROIC FY2024</div><div class="analysis-box-val" style="color:var(--accent-green)">17.8%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">WACC</div><div class="analysis-box-val" style="color:var(--accent-blue)">12.5%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Value Spread</div><div class="analysis-box-val" style="color:var(--accent-green)">+5.3%</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> How much return IndiGo generates on every rupee invested in the business (equity + debt). The gold standard of capital efficiency, used by Warren Buffett, Goldman Sachs, and all long-term investors.<br><br>
+          <strong>IndiGo Context:</strong> ROIC of <span class="hi-green">17.8% vs WACC of 12.5%</span> = <span class="hi-green">+530bps value spread</span>. Every rupee invested creates ₹0.053 of economic value annually. From FY2021 deeply negative ROIC (-30%+) during COVID to 17.8% in FY2024 is a remarkable structural recovery. IndiGo's asset-light model (no owned aircraft) structurally lowers the invested capital base, lifting ROIC. <span class="hi-gold">Sustainably high ROIC &gt; WACC is the single most important indicator of a great business.</span><br><br>
+          <strong>IB Significance:</strong> The intrinsic value multiple is approximately ROIC/WACC × Book Value. At 17.8/12.5 = 1.42x, IndiGo should trade at 1.42x invested capital — which broadly supports current valuations.
+        </div>
+        <div class="tag-row"><span class="tag tag-good">ROIC &gt; WACC → Value creation confirmed</span><span class="tag tag-good">Asset-light model elevates ROIC</span><span class="tag tag-info">Best metric for long-term fundamental analysis</span></div>
+      </div>
+
+      <!-- LBO section -->
+      <div class="category-header">🏦 Section 6 — LBO & M&A Parameters</div>
+
+      <div class="param-block purple">
+        <div class="param-header">
+          <div>
+            <div class="param-name">⑯ IRR — Internal Rate of Return (LBO)</div>
+            <div class="param-formula">Solve for r: 0 = −Entry Equity + Σ(CFt/(1+r)^t) + Exit Equity/(1+r)^n</div>
+          </div>
+          <div class="param-value" style="color:var(--accent-purple)">~22-28%</div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-box"><div class="analysis-box-title">PE Hurdle Rate</div><div class="analysis-box-val">20%+</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">Typical 5-yr airline LBO</div><div class="analysis-box-val">15-25%</div></div>
+          <div class="analysis-box"><div class="analysis-box-title">MOIC (target)</div><div class="analysis-box-val">&gt;2.5x</div></div>
+        </div>
+        <div class="insight">
+          <strong>What it is:</strong> The annualised return rate that makes the NPV of all LBO cash flows equal to zero. PE firms target IRR &gt;20% as the hurdle rate for buyout investments.<br><br>
+          <strong>IndiGo Context:</strong> An IndiGo LBO is <span class="hi-gold">theoretically challenging</span> for four reasons: (1) existing debt massive (₹51,280 Cr lease liabilities), (2) high EV at ₹1,94,557 Cr requires huge equity cheque, (3) aviation is cyclical (COVID destroyed value in 2 years), (4) IndiGo promoters (Rahul Bhatia family ~37% stake) unlikely to sell. However, <span class="hi-green">with 60% debt / 40% equity split</span> at 13.5x exit EV/EBITDA + 15% revenue CAGR + ₹18,006 Cr EBITDA FY2025E, a hypothetical PE deal yields ~24% IRR (strong) with 2.8x MOIC. Key risk: fuel price spike can destroy returns quickly.<br><br>
+          <strong>IB Significance:</strong> IRR is solved iteratively (Newton-Raphson or Excel's IRR function). MOIC (Money-on-Invested-Capital) is the simpler metric: 3x = tripled money in hold period.
+        </div>
+        <div class="tag-row"><span class="tag tag-warn">Real LBO unlikely — promoter control</span><span class="tag tag-good">Hypothetical: ~24% IRR at base case</span><span class="tag tag-info">Aviation cyclicality = key LBO risk</span></div>
+      </div>
+
+      <!-- Final Analyst Summary -->
+      <div class="card animate-in" style="margin-top:8px;">
+        <div class="card-header"><div class="card-title">📊 Analyst Verdict — IndiGo Investment Thesis Summary</div><span class="badge green">BUY</span></div>
+        <div class="indigo-verdict verdict-bull">
+          <strong style="color:var(--accent-green)">🟢 BULL CASE (₹6,500–7,000 target):</strong> India aviation market growing 15%+ annually as middle class expands. IndiGo's 63.6% market share and CASK discipline create a moat. FY2025E EBITDA of ₹18,006 Cr at 14x = ₹2.52L Cr EV. FCF yield of 7.4% self-funds fleet expansion. 500+ aircraft by FY2027 (A321XLR order) expands international TAM.
+        </div>
+        <div class="indigo-verdict verdict-bear" style="margin-top:12px;">
+          <strong style="color:var(--accent-red)">🔴 BEAR CASE (₹3,500–4,000 target):</strong> ATF price spike (+30%) could turn EBITDA negative instantly (see FY2019). New entrants (Air India + Vistara merger, Akasa Air) pressuring fares. GoFirst liquidation saga shows Indian aviation's structural fragility. IND AS 116 lease liabilities make balance sheet look overleveraged. INR depreciation raises dollar-denominated lease costs.
+        </div>
+        <div class="indigo-verdict verdict-neutral" style="margin-top:12px;">
+          <strong style="color:var(--accent-gold)">⚡ KEY MONITORING METRICS:</strong> (1) Crude oil (Brent &gt;$100 = bearish), (2) Load Factor (below 83% = demand worry), (3) RASK trend (falling RASK = fare war underway), (4) Fleet delivery schedule (engine issues = capacity constraint), (5) Competitor capacity additions (Air India Vistara + Akasa), (6) IndiGo's international revenue share (target 30%+ for re-rating).
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('analysis.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('IB Research Report', 'IndiGo — In-Depth Parameter Analysis · 16 Key Metrics Explained · Investment Banking Grade');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+};
+</script>
+</body>
+</html>

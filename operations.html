@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Operations & Fleet Analytics — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .ops-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+    .unit-econ-table td { font-size:12px; }
+    .phase-badge { display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:20px;">
+        <div class="section-title">✈️ Operations & Fleet Analytics</div>
+        <div class="section-subtitle">Airline Unit Economics — CASK, RASK, Load Factor, Fleet Growth, Market Share · FY2011–FY2025E</div>
+      </div>
+
+      <!-- Ops KPIs -->
+      <div class="kpi-grid animate-in delay-1" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card blue"><div class="kpi-accent"></div><div class="kpi-label">Fleet FY2024</div><div class="kpi-value" style="font-size:22px;">370 Aircraft</div><div class="kpi-change up">▲ 6.8x growth from 54 in FY2011</div></div>
+        <div class="kpi-card green"><div class="kpi-accent"></div><div class="kpi-label">Pax FY2024</div><div class="kpi-value" style="font-size:22px;">101.5M</div><div class="kpi-change up">▲ 12x growth since FY2011</div></div>
+        <div class="kpi-card gold"><div class="kpi-accent"></div><div class="kpi-label">Load Factor FY2024</div><div class="kpi-value" style="font-size:22px;">87.0%</div><div class="kpi-change up">↑ from 75.2% in FY2011</div></div>
+        <div class="kpi-card purple"><div class="kpi-accent"></div><div class="kpi-label">Market Share FY2024</div><div class="kpi-value" style="font-size:22px;">63.6%</div><div class="kpi-change up">↑ from 14.0% in FY2011</div></div>
+      </div>
+
+      <!-- CASK vs RASK spread -->
+      <div class="card animate-in delay-2" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">🎯 Unit Economics — RASK vs CASK (₹/ASK) · 15-Year</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="font-size:12px;color:var(--text-muted)">Green spread = profitable · Red = loss-making</span>
+            <span class="badge blue">Key IB Metric</span>
+          </div>
+        </div>
+        <div class="chart-container" style="height:260px;"><canvas id="raskCaskChart"></canvas></div>
+      </div>
+
+      <!-- Fleet + Load Factor dual -->
+      <div class="grid-2 animate-in delay-3">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🛫 Fleet & Passenger Growth</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="fleetChart2"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Load Factor Trend (%) — 15 Years</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="lfChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Unit Economics Table -->
+      <div class="card animate-in delay-3" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">📋 Unit Economics — Airline KPI Table (₹/ASK)</div>
+          <div style="display:flex;gap:8px;"><span class="badge gold">Investment Banking Critical Metrics</span><span class="badge gold">👉 Scroll Horizontally</span></div>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;">
+          <table class="fin-table unit-econ-table">
+            <thead>
+              <tr>
+                <th style="text-align:left">Metric</th>
+                <th>FY2011</th><th>FY2012</th><th>FY2013</th><th>FY2014</th><th>FY2015</th><th>FY2016</th><th>FY2017</th><th>FY2018</th><th>FY2019</th><th>FY2020</th><th>FY2021</th><th>FY2022</th><th>FY2023</th><th>FY2024</th><th>FY2025E</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700;color:var(--accent-blue)">Revenue (₹ Cr)</td>
+                <td>3K</td><td>6K</td><td>9K</td><td>11K</td><td>14K</td><td>17K</td><td>19K</td><td>24K</td><td>30K</td><td>36K</td><td>16K</td><td>26K</td><td>54K</td><td>71K</td><td>84K</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700;color:var(--accent-green)">EBITDA (₹ Cr)</td>
+                <td class="negative">(1H)</td><td class="positive">2H</td><td class="positive">5H</td><td class="positive">8H</td><td class="positive">19H</td><td class="positive">31H</td><td class="positive">21H</td><td class="positive">30H</td><td class="negative">(1H)</td><td class="positive">40H</td><td class="negative">(0H)</td><td class="positive">5H</td><td class="positive">65H</td><td class="positive">163H</td><td class="positive">180H</td>
+              </tr>
+              <tr class="subtotal">
+                <td>Fleet (aircraft)</td>
+                <td>54</td><td>78</td><td>84</td><td>86</td><td>96</td><td>107</td><td>132</td><td>156</td><td>218</td><td>262</td><td>224</td><td>278</td><td>304</td><td>370</td><td>420</td>
+              </tr>
+              <tr>
+                <td>Passengers (M)</td>
+                <td>8.4</td><td>14.2</td><td>20.1</td><td>26.1</td><td>33.1</td><td>40.8</td><td>47.8</td><td>56.3</td><td>63.5</td><td>75.2</td><td>30.8</td><td>48.2</td><td>85.4</td><td>101.5</td><td>115.0</td>
+              </tr>
+              <tr class="subtotal">
+                <td>Load Factor (%)</td>
+                <td>75.2%</td><td>77.8%</td><td>79.1%</td><td>80.9%</td><td>83%</td><td>84%</td><td>85.6%</td><td>87.1%</td><td>86.8%</td><td>85.8%</td><td>64.8%</td><td>77.4%</td><td>85.6%</td><td>87%</td><td>86.8%</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700;color:var(--accent-blue)">RASK (₹/ASK)</td>
+                <td style="color:var(--accent-blue)">2.80</td><td style="color:var(--accent-blue)">2.95</td><td style="color:var(--accent-blue)">3.10</td><td style="color:var(--accent-blue)">3.20</td><td style="color:var(--accent-blue)">3.35</td><td style="color:var(--accent-blue)">3.52</td><td style="color:var(--accent-blue)">3.68</td><td style="color:var(--accent-blue)">3.82</td><td style="color:var(--accent-blue)">4.02</td><td style="color:var(--accent-blue)">3.95</td><td style="color:var(--accent-blue)">2.84</td><td style="color:var(--accent-blue)">3.48</td><td style="color:var(--accent-blue)">4.82</td><td style="color:var(--accent-blue)">5.24</td><td style="color:var(--accent-blue)">5.41</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700;color:var(--accent-gold)">CASK ex-fuel (₹/ASK)</td>
+                <td style="color:var(--accent-gold)">3.10</td><td style="color:var(--accent-gold)">2.85</td><td style="color:var(--accent-gold)">2.72</td><td style="color:var(--accent-gold)">2.55</td><td style="color:var(--accent-gold)">2.48</td><td style="color:var(--accent-gold)">2.01</td><td style="color:var(--accent-gold)">2.12</td><td style="color:var(--accent-gold)">2.18</td><td style="color:var(--accent-gold)">2.92</td><td style="color:var(--accent-gold)">2.86</td><td style="color:var(--accent-gold)">3.52</td><td style="color:var(--accent-gold)">3.18</td><td style="color:var(--accent-gold)">2.98</td><td style="color:var(--accent-gold)">2.66</td><td style="color:var(--accent-gold)">2.78</td>
+              </tr>
+              <tr class="total">
+                <td>Spread (RASK–CASK)</td>
+                <td class="negative">-0.30</td><td class="positive">0.10</td><td class="positive">0.38</td><td class="positive">0.65</td><td class="positive">0.87</td><td class="positive">1.51</td><td class="positive">1.56</td><td class="positive">1.64</td><td class="positive">1.10</td><td class="positive">1.09</td><td class="negative">-0.68</td><td class="positive">0.30</td><td class="positive">1.84</td><td class="positive">2.58</td><td class="positive">2.63</td>
+              </tr>
+              <tr>
+                <td>Market Share (%)</td>
+                <td style="color:var(--accent-purple)">14%</td><td style="color:var(--accent-purple)">17.5%</td><td style="color:var(--accent-purple)">22%</td><td style="color:var(--accent-purple)">26.5%</td><td style="color:var(--accent-purple)">31%</td><td style="color:var(--accent-purple)">36%</td><td style="color:var(--accent-purple)">39.5%</td><td style="color:var(--accent-purple)">43%</td><td style="color:var(--accent-purple)">45.2%</td><td style="color:var(--accent-purple)">47.5%</td><td style="color:var(--accent-purple)">54.8%</td><td style="color:var(--accent-purple)">57.2%</td><td style="color:var(--accent-purple)">59.4%</td><td style="color:var(--accent-purple)">61.8%</td><td style="color:var(--accent-purple)">63.6%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cost Breakdown + Revenue Breakdown -->
+      <div class="grid-2 animate-in delay-4">
+        <div class="card">
+          <div class="card-header"><div class="card-title">💰 Cost Breakdown — FY2024 (₹ Cr)</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="costPie"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Revenue per Aircraft Trend</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="revPerAcChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Phase Analysis -->
+      <div class="card animate-in delay-5" style="margin-top:0;">
+        <div class="card-header"><div class="card-title">📚 IndiGo — 4 Phases of Growth Analysis</div></div>
+        <div class="grid-2" style="gap:16px;margin-bottom:0;">
+          <div style="padding:16px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-sm);">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-green);margin-bottom:8px;">PHASE 1: HYPER-GROWTH (FY2011–FY2016)</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">Revenue CAGR: <strong style="color:var(--accent-green)">37%</strong> · Fleet: 54→107 · Market Share: 14%→36%<br>Peak EBITDA margin: <strong style="color:var(--accent-green)">18.7% (FY2016)</strong> · Benefited from low fuel prices<br>Jet Airways & Kingfisher collapse → Structural share gain</div>
+          </div>
+          <div style="padding:16px;background:rgba(245,197,24,0.05);border:1px solid rgba(245,197,24,0.15);border-radius:var(--radius-sm);">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">PHASE 2: MARGIN COMPRESSION (FY2017–FY2020)</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">Revenue CAGR: <strong style="color:var(--accent-gold)">24%</strong> · Fuel spike FY2019 → profit -93%<br>EBITDA margin compressed to <strong style="color:var(--accent-red)">near-zero (FY2019: -0.5%)</strong><br>Jet Airways collapse → opportunistic pax capture but also cost pressure</div>
+          </div>
+          <div style="padding:16px;background:rgba(255,69,96,0.05);border:1px solid rgba(255,69,96,0.15);border-radius:var(--radius-sm);">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-red);margin-bottom:8px;">PHASE 3: COVID DEVASTATION (FY2021–FY2022)</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">Revenue halved to <strong style="color:var(--accent-red)">₹16,201 Cr</strong> · Combined losses: <strong style="color:var(--accent-red)">₹11,968 Cr</strong><br>Equity turned negative. Fleet reduced 262→224 (COVID groundings)<br>IND AS 116 impact massively inflated balance sheet (lease liabilities)</div>
+          </div>
+          <div style="padding:16px;background:rgba(0,180,255,0.05);border:1px solid rgba(0,180,255,0.15);border-radius:var(--radius-sm);">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-blue);margin-bottom:8px;">PHASE 4: RECORD REBOUND (FY2023–PRESENT)</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">Revenue CAGR FY22–24: <strong style="color:var(--accent-blue)">66%</strong> · FY2024 Net Profit: ₹8,173 Cr<br>Fleet: 370 aircraft · Target 500+ by FY2027 (XLR order)<br>EBITDA margin: <strong style="color:var(--accent-green)">22.9%</strong> · FCF positive ₹14,360 Cr</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('operations.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('Operations & Fleet Analytics', 'CASK · RASK · Load Factor · Fleet · Market Share — 15-Year Analysis');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+const sx={grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},maxRotation:45}};
+const sy=cb=>({grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:cb}});
+const pl={legend:{labels:{color:'#7aaccc',font:{size:11},padding:14}},tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1}};
+
+// RASK vs CASK
+const spread = OPS.rask.map((r,i)=>r-OPS.cask[i]);
+new Chart(document.getElementById('raskCaskChart'), {
+  data:{
+    labels: YEARS_SHORT,
+    datasets:[
+      {type:'bar',label:'Spread (RASK–CASK)',data:spread,backgroundColor:spread.map(v=>v>=0?'rgba(0,229,160,0.5)':'rgba(255,69,96,0.5)'),borderRadius:3,yAxisID:'y2',order:2},
+      {type:'line',label:'RASK (₹/ASK)',data:OPS.rask,borderColor:'#00b4ff',borderWidth:2,pointBackgroundColor:'#00b4ff',tension:0.4,yAxisID:'y',order:1},
+      {type:'line',label:'CASK ex-fuel (₹/ASK)',data:OPS.cask,borderColor:'#f5c518',borderWidth:2,borderDash:[5,3],pointBackgroundColor:'#f5c518',tension:0.4,yAxisID:'y',order:1},
+    ]
+  },
+  options:{...CHART_DEFAULTS,scales:{
+    x:sx,
+    y:{...sy(v=>'₹'+v.toFixed(2)),title:{display:true,text:'₹/ASK',color:'#3a6a88',font:{size:9}}},
+    y2:{position:'right',grid:{display:false},ticks:{color:'#7aaccc',font:{size:10},callback:v=>'₹'+v.toFixed(2)},title:{display:true,text:'Spread',color:'#3a6a88',font:{size:9}}}
+  },plugins:pl}
+});
+
+// Fleet chart
+new Chart(document.getElementById('fleetChart2'),{
+  data:{labels:YEARS_SHORT,datasets:[
+    {type:'bar',label:'Fleet',data:OPS.fleet,backgroundColor:'rgba(168,85,247,0.6)',borderRadius:4,yAxisID:'y'},
+    {type:'line',label:'Passengers (M)',data:OPS.passengers,borderColor:'#00b4ff',borderWidth:2,pointBackgroundColor:'#00b4ff',tension:0.4,yAxisID:'y2'},
+  ]},
+  options:{...CHART_DEFAULTS,scales:{x:sx,y:{...sy(v=>v+' ac')},y2:{position:'right',grid:{display:false},ticks:{color:'#00b4ff',font:{size:10},callback:v=>v+'M'}}},plugins:pl}
+});
+
+// Load Factor
+new Chart(document.getElementById('lfChart'),{
+  type:'line',
+  data:{labels:YEARS_SHORT,datasets:[
+    {label:'Load Factor %',data:OPS.loadFactor,borderColor:'#00e5a0',backgroundColor:'rgba(0,229,160,0.08)',tension:0.4,fill:true,pointBackgroundColor:OPS.loadFactor.map(v=>v<70?'#ff4560':'#00e5a0'),pointRadius:4},
+    {label:'85% Breakeven Target',data:Array(15).fill(85),borderColor:'rgba(245,197,24,0.5)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+  ]},
+  options:{...CHART_DEFAULTS,scales:{x:sx,y:{...sy(v=>v+'%'),min:40,max:95}},plugins:pl}
+});
+
+// Cost Pie (FY2024)
+new Chart(document.getElementById('costPie'),{
+  type:'doughnut',
+  data:{
+    labels:['Fuel & Oil','Aircraft Lease (IND AS116)','Employee Cost','Maintenance','Navigation & Airport','Others'],
+    datasets:[{data:[26180,15480,10240,4820,6820,7690],backgroundColor:['#ff4560','#00b4ff','#00e5a0','#f5c518','#a855f7','#f97316'],borderWidth:2,borderColor:'#040d1a'}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#7aaccc',font:{size:10},padding:10}}}}
+});
+
+// Revenue per aircraft
+const revPerAc = IS.revenue.map((r,i)=>OPS.fleet[i]>0?(r/OPS.fleet[i]).toFixed(1):null);
+new Chart(document.getElementById('revPerAcChart'),{
+  type:'bar',
+  data:{labels:YEARS_SHORT,datasets:[{label:'Revenue per Aircraft (₹ Cr/plane)',data:revPerAc,backgroundColor:'rgba(0,180,255,0.6)',borderRadius:4}]},
+  options:{...CHART_DEFAULTS,scales:{x:sx,y:{...sy(v=>'₹'+v+'Cr')}},plugins:{...pl,legend:{display:false}}}
+});
+
+};
+</script>
+</body>
+</html>

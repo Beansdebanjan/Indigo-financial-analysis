@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DCF Valuation — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .dcf-output{background:linear-gradient(135deg,rgba(0,180,255,0.08),rgba(168,85,247,0.08));border:1px solid var(--border-bright);border-radius:var(--radius);padding:24px;}
+    .dcf-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+    .dcf-value{font-size:30px;font-weight:900;font-family:'JetBrains Mono',monospace;}
+    .dcf-sub{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:20px;">
+        <div class="section-title">🔢 DCF Valuation — IndiGo</div>
+        <div class="section-subtitle">Discounted Cash Flow Model · InterGlobe Aviation Ltd · Adjust assumptions below for real-time recalculation · Base: FY2024 actuals</div>
+      </div>
+
+      <!-- IndiGo-specific notes -->
+      <div style="background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);">
+        📌 <strong style="color:var(--accent-blue)">Analyst Note:</strong> IndiGo's DCF uses EBITDAR (pre-lease) approach given IND AS 116 lease capitalisation. WACC reflects Indian aviation sector risk (higher beta, INR debt). FCF = EBITDA × (1-t) + D&A − CapEx − Lease Payments (economic). Terminal value uses Gordon Growth at Indian long-run nominal GDP growth (~6.5%).
+      </div>
+
+      <!-- Outputs -->
+      <div class="grid-3 animate-in delay-1" id="dcf-out">
+        <div class="dcf-output"><div class="dcf-label">Enterprise Value</div><div class="dcf-value" id="out-ev" style="color:var(--accent-green)">—</div><div class="dcf-sub">PV(FCFs) + PV(Terminal Value)</div></div>
+        <div class="dcf-output"><div class="dcf-label">Equity Value</div><div class="dcf-value" id="out-eq" style="color:var(--accent-blue)">—</div><div class="dcf-sub">EV − Net Debt (₹36,920 Cr)</div></div>
+        <div class="dcf-output"><div class="dcf-label">Implied Share Price</div><div class="dcf-value" id="out-price" style="color:var(--accent-gold)">—</div><div class="dcf-sub" id="out-updown">Current: ₹5,048 (NSE)</div></div>
+      </div>
+
+      <div class="grid-2 animate-in delay-2">
+        <!-- Inputs -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚙️ Model Assumptions (IndiGo-Specific)</div><span class="badge blue">Editable</span></div>
+          <div class="grid-2" style="gap:12px;margin-bottom:0;">
+            <div class="input-group"><label class="input-label">WACC (%)</label><input type="number" class="fin-input" id="wacc" value="12.5" step="0.1" min="8" max="20"></div>
+            <div class="input-group"><label class="input-label">Terminal Growth Rate (%)</label><input type="number" class="fin-input" id="tgr" value="6.5" step="0.1" min="2" max="9"></div>
+            <div class="input-group"><label class="input-label">Yr1 Revenue Growth (%)</label><input type="number" class="fin-input" id="g1" value="18.1" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Yr5 Revenue Growth (%)</label><input type="number" class="fin-input" id="g5" value="10.0" step="0.1"></div>
+            <div class="input-group"><label class="input-label">EBITDA Margin (%)</label><input type="number" class="fin-input" id="margin" value="22.9" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Tax Rate (%)</label><input type="number" class="fin-input" id="tax" value="25.0" step="0.1"></div>
+            <div class="input-group"><label class="input-label">CapEx (% of Rev)</label><input type="number" class="fin-input" id="capex" value="6.0" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Net Debt (₹ Cr)</label><input type="number" class="fin-input" id="netdebt" value="36920" step="100"></div>
+          </div>
+          <button class="btn btn-primary" onclick="runDCF()" style="margin-top:10px;width:100%;">▶ Recalculate DCF</button>
+        </div>
+
+        <!-- FCF Schedule -->
+        <div class="card">
+          <div class="card-header">
+          <div class="card-title">🗓️ 5-Year Free Cash Flow Projections (₹ Cr)</div>
+          <span class="badge gold">👉 Scroll Horizontally</span>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;"><table class="fin-table" style="font-size:12px;"><thead><tr id="dcf-head"></tr></thead><tbody id="dcf-body"></tbody></table></div>
+          <div class="divider"></div>
+          <div class="metric-row"><span class="metric-name">PV of 5-Year FCFs</span><span class="metric-value" id="pv-fcfs" style="color:var(--accent-blue)">—</span></div>
+          <div class="metric-row"><span class="metric-name">Terminal Value</span><span class="metric-value" id="tv" style="color:var(--accent-purple)">—</span></div>
+          <div class="metric-row"><span class="metric-name">PV of Terminal Value</span><span class="metric-value" id="pv-tv" style="color:var(--accent-purple)">—</span></div>
+          <div class="metric-row"><span class="metric-name">% from Terminal Value</span><span class="metric-value" id="tv-pct" style="color:var(--text-secondary)">—</span></div>
+        </div>
+      </div>
+
+      <!-- FCF chart -->
+      <div class="card animate-in delay-3" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">📊 Projected vs Discounted FCF (₹ Crores)</div></div>
+        <div class="chart-container" style="height:230px;"><canvas id="fcfChart"></canvas></div>
+      </div>
+
+      <!-- Sensitivity Table -->
+      <div class="card animate-in delay-4">
+        <div class="card-header">
+          <div class="card-title">🎯 Sensitivity — Implied Share Price vs Base (₹)</div>
+          <span class="badge gold">👉 Scroll Horizontally</span>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Blue-outlined cell = base case. Green = upside vs ₹5,048 CMP. Red = downside.</p>
+        <div style="overflow-x:auto;"><table class="heatmap-table" id="sens-table"></table></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('dcf.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('DCF Valuation', 'IndiGo — Discounted Cash Flow Analysis · Interactive Aviation Model');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+const CMP = 5048;
+const SHARES = 385.7; // million
+
+let fcfCh;
+function fmtCr2(n){
+  const a=Math.abs(n);
+  if(a>=100000) return '₹'+(n/100000).toFixed(2)+'L Cr';
+  if(a>=1000) return '₹'+(n/1000).toFixed(1)+'K Cr';
+  return '₹'+n.toFixed(0)+' Cr';
+}
+
+function runDCF(){
+  const wacc=parseFloat(document.getElementById('wacc').value)/100;
+  const tgr=parseFloat(document.getElementById('tgr').value)/100;
+  const g1=parseFloat(document.getElementById('g1').value)/100;
+  const g5=parseFloat(document.getElementById('g5').value)/100;
+  const margin=parseFloat(document.getElementById('margin').value)/100;
+  const tax=parseFloat(document.getElementById('tax').value)/100;
+  const capexP=parseFloat(document.getElementById('capex').value)/100;
+  const netDebt=parseFloat(document.getElementById('netdebt').value);
+
+  const baseRev=71230;
+  const growths=[];
+  for(let i=0;i<5;i++) growths.push(g1+(g5-g1)*(i/4));
+
+  const revs=[],ebitdas=[],nopats=[],fcfs=[],pvs=[];
+  let rev=baseRev;
+  for(let i=0;i<5;i++){
+    rev*=(1+growths[i]);
+    const ebitda=rev*margin;
+    const ebit=ebitda-rev*0.054; // D&A ~5.4%
+    const nopat=ebit*(1-tax);
+    const capex=rev*capexP;
+    const fcf=nopat+(rev*0.054)-capex;
+    const pv=fcf/Math.pow(1+wacc,i+1);
+    revs.push(Math.round(rev)); ebitdas.push(Math.round(ebitda));
+    nopats.push(Math.round(nopat)); fcfs.push(Math.round(fcf)); pvs.push(Math.round(pv));
+  }
+
+  const termFCF=fcfs[4]*(1+tgr);
+  const tv=termFCF/(wacc-tgr);
+  const pvTv=tv/Math.pow(1+wacc,5);
+  const sumPV=pvs.reduce((a,b)=>a+b,0);
+  const ev=sumPV+pvTv;
+  const equity=ev-netDebt;
+  const price=(equity/(SHARES)).toFixed(0);
+  const updn=((price/CMP-1)*100).toFixed(1);
+
+  document.getElementById('out-ev').textContent=fmtCr2(ev);
+  document.getElementById('out-eq').textContent=fmtCr2(equity);
+  document.getElementById('out-price').textContent='₹'+parseInt(price).toLocaleString();
+  document.getElementById('out-updown').innerHTML='vs CMP ₹5,048: <strong style="color:'+(updn>=0?'var(--accent-green)':'var(--accent-red)')+';">'+(updn>=0?'▲+':'▼')+updn+'%</strong>';
+  document.getElementById('pv-fcfs').textContent=fmtCr2(sumPV);
+  document.getElementById('tv').textContent=fmtCr2(tv);
+  document.getElementById('pv-tv').textContent=fmtCr2(pvTv);
+  document.getElementById('tv-pct').textContent=(pvTv/ev*100).toFixed(1)+'%';
+
+  const lbls=['Revenue','EBITDA','NOPAT','FCF','PV of FCF'];
+  const rows=[revs,ebitdas,nopats,fcfs,pvs];
+  document.getElementById('dcf-tbody').innerHTML=rows.map((r,ri)=>`
+    <tr ${ri===3?'class="subtotal"':ri===4?'class="total"':''}>
+      <td style="text-align:left;font-size:11px;">${lbls[ri]}</td>
+      ${r.map(v=>`<td>${(v/1000).toFixed(1)}K</td>`).join('')}
+    </tr>`).join('');
+
+  const ctx=document.getElementById('fcfChart');
+  if(fcfCh) fcfCh.destroy();
+  fcfCh=new Chart(ctx,{type:'bar',data:{
+    labels:['FY25E','FY26E','FY27E','FY28E','FY29E'],
+    datasets:[
+      {label:'FCF (₹Cr)',data:fcfs,backgroundColor:'rgba(0,229,160,0.6)',borderRadius:4},
+      {label:'PV of FCF (₹Cr)',data:pvs,backgroundColor:'rgba(0,180,255,0.6)',borderRadius:4},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:11}}},y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:v=>'₹'+(v/1000).toFixed(0)+'K Cr'}}},
+    plugins:{legend:{labels:{color:'#7aaccc',font:{size:11}}},tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1}}}});
+
+  buildSens(margin,tax,capexP,netDebt,baseRev,g1,g5);
+}
+
+function calcPrice(w,t,margin,tax,capexP,netDebt,baseRev,g1,g5){
+  const growths=[];
+  for(let i=0;i<5;i++) growths.push(g1+(g5-g1)*(i/4));
+  let rev=baseRev,sumPV=0,lastFCF=0;
+  for(let i=0;i<5;i++){
+    rev*=(1+growths[i]);
+    const fcf=(rev*margin-rev*0.054)*(1-tax)+(rev*0.054)-rev*capexP;
+    sumPV+=fcf/Math.pow(1+w,i+1); lastFCF=fcf;
+  }
+  const tv=lastFCF*(1+t)/(w-t);
+  const ev=sumPV+tv/Math.pow(1+w,5);
+  return Math.round((ev-netDebt)/SHARES);
+}
+
+function buildSens(margin,tax,capexP,netDebt,baseRev,g1,g5){
+  const waccs=[0.10,0.11,0.12,0.125,0.13,0.14,0.15];
+  const tgrs=[0.04,0.05,0.055,0.065,0.07,0.075];
+  let html='<thead><tr><th>WACC \\ TGR</th>'+tgrs.map(t=>`<th>${(t*100).toFixed(1)}%</th>`).join('')+'</tr></thead><tbody>';
+  waccs.forEach(w=>{
+    html+=`<tr><th>${(w*100).toFixed(1)}%</th>`;
+    tgrs.forEach(t=>{
+      if(w<=t){html+='<td class="heat-neutral">N/A</td>';return;}
+      const p=calcPrice(w,t,margin,tax,capexP,netDebt,baseRev,g1,g5);
+      const pct=((p/CMP)-1)*100;
+      let cls=pct>30?'heat-dark-green':pct>15?'heat-green':pct>5?'heat-light-green':pct>-5?'heat-neutral':pct>-15?'heat-light-red':pct>-25?'heat-red':'heat-dark-red';
+      const isBase=Math.abs(w-0.125)<0.001&&Math.abs(t-0.065)<0.001;
+      html+=`<td class="${cls}${isBase?' heat-highlight':''}" title="${pct.toFixed(1)}% vs CMP">₹${p.toLocaleString()}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  document.getElementById('sens-table').innerHTML=html;
+}
+
+runDCF();
+
+};
+</script>
+</body>
+</html>

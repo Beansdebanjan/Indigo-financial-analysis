@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IndiGo — Macro Stress Test & Optimizer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    /* Range Slider Styling */
+    .slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(0,180,255,0.1);
+      border-radius: 3px;
+      outline: none;
+      margin: 10px 0 20px 0;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      cursor: pointer;
+      box-shadow: var(--glow-blue);
+      transition: all 0.2s;
+    }
+    .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .slider.red-slider::-webkit-slider-thumb { background: var(--accent-red); box-shadow: var(--glow-red); }
+    .slider.gold-slider::-webkit-slider-thumb { background: var(--accent-gold); box-shadow: 0 0 15px rgba(245,197,24,0.3); }
+
+    .control-panel {
+      background: rgba(0, 180, 255, 0.03);
+      border: 1px solid var(--border-bright);
+      padding: 24px;
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+    .val-display { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--text-primary); float: right; }
+    
+    .impact-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;
+    }
+    .impact-card {
+      background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius-sm);
+      position: relative; overflow: hidden;
+    }
+    .impact-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;}
+    .impact-val { font-size: 24px; font-family: 'JetBrains Mono', monospace; font-weight: 800;}
+    .impact-diff { font-size: 12px; margin-top: 4px;}
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:24px;">
+        <div class="section-title">⚡ Macro-Shock Stress Testing & Breakeven Optimizer</div>
+        <div class="section-subtitle">Real-time simulation of Fuel Spikes, Currency Depreciation, and Load Factor required to break even under stress.</div>
+      </div>
+
+      <!-- Controls & KPI Impact row -->
+      <div class="grid-2 animate-in delay-1">
+        
+        <!-- Controls -->
+        <div class="control-panel">
+          <div class="card-header"><div class="card-title">🎛️ Scenario Control Panel</div></div>
+          
+          <label style="font-size:12px; font-weight:600; color:var(--text-secondary)">
+            ✈️ Jet Fuel (ATF) Price Shock
+            <span class="val-display" id="valFuel">+0%</span>
+          </label>
+          <input type="range" id="sliderFuel" class="slider red-slider" min="-50" max="150" value="0" step="5">
+          <div style="font-size:11px; color:var(--text-muted); margin-top:-12px; margin-bottom:20px; display:flex; justify-content:space-between">
+            <span>-50% (Crash)</span><span>Base ($85/bbl)</span><span>+150% ($200+/bbl)</span>
+          </div>
+
+          <label style="font-size:12px; font-weight:600; color:var(--text-secondary)">
+            💱 USD/INR Currency Depreciation
+            <span class="val-display" id="valFx">+0%</span>
+          </label>
+          <input type="range" id="sliderFx" class="slider gold-slider" min="-10" max="50" value="0" step="2">
+          <div style="font-size:11px; color:var(--text-muted); margin-top:-12px; margin-bottom:20px; display:flex; justify-content:space-between">
+            <span>Appreciate 10%</span><span>Base (₹83/$)</span><span>Depreciate 50% (₹125/$)</span>
+          </div>
+          
+          <label style="font-size:12px; font-weight:600; color:var(--text-secondary)">
+            🎟️ Domestic Yield Shock (Pricing Power)
+            <span class="val-display" id="valYield">+0%</span>
+          </label>
+          <input type="range" id="sliderYield" class="slider" min="-30" max="30" value="0" step="2">
+          <div style="font-size:11px; color:var(--text-muted); margin-top:-12px; margin-bottom:10px; display:flex; justify-content:space-between">
+            <span>Price War (-30%)</span><span>Status Quo</span><span>Price Hike (+30%)</span>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px" onclick="resetSliders()">🔄 Reset to Base Case</button>
+        </div>
+
+        <!-- Impacts -->
+        <div>
+          <div class="card" style="height:100%; border-color:var(--border-bright); background: linear-gradient(180deg, rgba(0,180,255,0.05) 0%, rgba(0,0,0,0) 100%);">
+            <div class="card-header"><div class="card-title">📊 Simulated FY25 Financial Outcome</div><span class="badge blue">Dynamic</span></div>
+            
+            <div class="impact-grid" style="grid-template-columns:1fr;">
+              
+              <div class="impact-card">
+                <div class="kpi-accent" style="background:var(--accent-green); height:3px; position:absolute; top:0;left:0;right:0"></div>
+                <div style="display:flex; justify-content:space-between;">
+                  <div>
+                    <div class="impact-label">FY25E Net Profit / (Loss)</div>
+                    <div class="impact-val" id="resNetIncome">₹7,253 Cr</div>
+                    <div class="impact-diff" id="diffNetIncome">Base Case</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="impact-label">Margin</div>
+                    <div class="impact-val" id="resMargin" style="font-size:18px">8.6%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="impact-card">
+                <div class="kpi-accent" style="background:var(--accent-red); height:3px; position:absolute; top:0;left:0;right:0"></div>
+                <div style="display:flex; justify-content:space-between;">
+                  <div>
+                    <div class="impact-label">FY25E Fuel & Lease Expense</div>
+                    <div class="impact-val" id="resOpex" style="color:var(--accent-red)">₹47,300 Cr</div>
+                    <div class="impact-diff" id="diffOpex">Base Case</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="impact-label">% of Rev</div>
+                    <div class="impact-val" id="resOpexPct" style="font-size:18px">56%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="impact-card">
+                <div class="kpi-accent" style="background:var(--accent-purple); height:3px; position:absolute; top:0;left:0;right:0"></div>
+                <div style="display:flex; justify-content:space-between;">
+                  <div>
+                    <div class="impact-label">Implied Cash Runway</div>
+                    <div class="impact-val" id="resRunway" style="color:var(--accent-purple)">Infinite</div>
+                    <div class="impact-diff" id="diffRunway" style="color:var(--text-muted)">Generating FCF</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="impact-label">FCF</div>
+                    <div class="impact-val" id="resFCF" style="font-size:18px">₹14,500 Cr</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Breakeven Chart -->
+      <div class="grid-2 animate-in delay-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📉 Required Breakeven Load Factor (%)</div></div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Shows the minimum seat occupancy required to not lose money under current stress conditions. If Breakeven LF > 100%, airline loses money even if every single seat is full.</div>
+          <div class="chart-container" style="height:250px;"><canvas id="breakevenChart"></canvas></div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header"><div class="card-title">💹 DCF Valuation Sensitivity</div></div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Impact of these macro conditions on intrinsic share price valuation, assuming shock persists for 3 years.</div>
+          <div class="chart-container" style="height:250px;"><canvas id="valChart"></canvas></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('stress-test.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('Macro Stress Engine', 'Dynamic Shock Scenarios & Breakeven Optimizer');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+// Base metrics FY25E
+const BASE_REVENUE = 84110;
+const BASE_FUEL = 30100;
+const BASE_LEASE_INT = 17200; // Lease + Maint approx proxy exposed to USD
+const BASE_OTHER = 28800;
+const BASE_TAX_RATE = 0.25;
+
+const BASE_YIELD = 5.02; // Rs per pax-km
+const BASE_CASK_EXFUEL = 2.78;
+const BASE_ASK = 39200 * 10; // (ATK * 10 approx to get ASK in Millions) -> 392,000 M ASK
+const BASE_CASH = 14280;
+
+let chartBE, chartVal;
+
+function initCharts() {
+  const ctxBE = document.getElementById('breakevenChart').getContext('2d');
+  chartBE = new Chart(ctxBE, {
+    type: 'bar',
+    data: {
+      labels: ['Status Quo (FY24)', 'Base FY25E', 'Stressed Scenario'],
+      datasets: [
+        { label: 'Achieved / Needed Load Factor (%)', data: [87.0, 86.8, 86.8], 
+          backgroundColor: ['rgba(0,180,255,0.3)', 'rgba(0,180,255,0.6)', 'rgba(255,69,96,0.8)'],
+          borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS, scales: { y: { min: 60, max: 120, title:{display:true, text:'Load Factor %', font:{size:9}} } },
+      plugins: {
+        annotation: {
+          annotations: {
+            line1: { type: 'line', yMin: 100, yMax: 100, borderColor: '#f5c518', borderWidth: 2, borderDash: [5,5], label: { content: '100% Plane Full', display: true, position: 'end' } }
+          }
+        }
+      }
+    }
+  });
+
+  const ctxVal = document.getElementById('valChart').getContext('2d');
+  chartVal = new Chart(ctxVal, {
+    type: 'line',
+    data: {
+      labels: ['Current Price', 'Base DCF', 'Stressed DCF'],
+      datasets: [
+        { label: 'Intrinsic Share Price (₹)', data: [5048, 5820, 5820], borderColor: '#00e5a0', tension:0.3, fill:true, backgroundColor:'rgba(0,229,160,0.1)', pointRadius:5 }
+      ]
+    },
+    options: { ...CHART_DEFAULTS, scales:{y:{min:0}} }
+  });
+}
+
+function updateModel() {
+  const fShock = parseFloat(document.getElementById('sliderFuel').value) / 100;
+  const fxShock = parseFloat(document.getElementById('sliderFx').value) / 100;
+  const yShock = parseFloat(document.getElementById('sliderYield').value) / 100;
+
+  document.getElementById('valFuel').innerText = (fShock>=0?'+':'') + (fShock*100).toFixed(0) + '%';
+  document.getElementById('valFx').innerText = (fxShock>=0?'+':'') + (fxShock*100).toFixed(0) + '%';
+  document.getElementById('valYield').innerText = (yShock>=0?'+':'') + (yShock*100).toFixed(0) + '%';
+
+  // Calculate new P&L
+  // Fuel is affected by both crude shock AND fx shock (priced in USD)
+  const newFuel = BASE_FUEL * (1 + fShock) * (1 + fxShock);
+  // Lease / Maint affected by FX shock
+  const newLeaseInfo = BASE_LEASE_INT * (1 + fxShock);
+  
+  // Revenue affected by Pricing Power
+  const newRev = BASE_REVENUE * (1 + yShock);
+  
+  const newOpex = newFuel + newLeaseInfo;
+  const baseOpex = BASE_FUEL + BASE_LEASE_INT;
+  
+  const totalCosts = newOpex + BASE_OTHER;
+  let EBT = newRev - totalCosts;
+  let newNetInc = EBT > 0 ? EBT * (1 - BASE_TAX_RATE) : EBT; // assume no tax shield recorded if loss
+
+  // UI Updates P&L
+  document.getElementById('resNetIncome').innerText = fmtCr(newNetInc);
+  const classNI = newNetInc >= 0 ? 'positive' : 'negative';
+  document.getElementById('resNetIncome').className = `impact-val ${classNI}`;
+  
+  const diffNI = newNetInc - 7253; // vs Base FY25E
+  document.getElementById('diffNetIncome').innerHTML = `<span class="${diffNI>=0?'positive':'negative'}">${diffNI>=0?'▲ +':'▼ '}${fmtCr(diffNI)}</span> vs Base`;
+  
+  document.getElementById('resMargin').innerText = ((newNetInc/newRev)*100).toFixed(1) + '%';
+  document.getElementById('resMargin').style.color = newNetInc >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
+  document.getElementById('resOpex').innerText = fmtCrShort(newOpex);
+  const diffOx = newOpex - baseOpex;
+  document.getElementById('diffOpex').innerHTML = `<span class="${diffOx<=0?'positive':'negative'}">${diffOx>0?'▲ Cost Up +':'▼ Cost Down '}${fmtCrShort(Math.abs(diffOx))}</span>`;
+  document.getElementById('resOpexPct').innerText = ((newOpex/newRev)*100).toFixed(1) + '%';
+
+  // Cash Runway
+  // Proxy FCF: Net Income + D&A (approx 7400) - Capex (approx 4500)
+  const newFCF = newNetInc + 7400 - 4500;
+  document.getElementById('resFCF').innerText = fmtCrShort(newFCF);
+  document.getElementById('resFCF').style.color = newFCF >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+  
+  if (newFCF >= 0) {
+    document.getElementById('resRunway').innerText = 'Infinite';
+    document.getElementById('resRunway').style.color = 'var(--accent-green)';
+    document.getElementById('diffRunway').innerText = 'Generating Cash';
+  } else {
+    const monthlyBurn = Math.abs(newFCF) / 12;
+    const months = BASE_CASH / monthlyBurn;
+    document.getElementById('resRunway').innerText = months.toFixed(1) + ' Months';
+    document.getElementById('resRunway').style.color = 'var(--accent-red)';
+    document.getElementById('diffRunway').innerText = 'Until Bankruptcy (₹'+monthlyBurn.toFixed(0)+'Cr burn/mo)';
+  }
+
+  // Update Breakeven CF
+  // Breakeven Load Factor = CASK / Yield
+  // We approximate CASK = Total Costs / BASE_ASK
+  // Yield is BASE_YIELD * (1 + yShock)
+  const newYield = BASE_YIELD * (1 + yShock);
+  const newCask = (totalCosts * 10) / 392000; // Cr -> Millions -> /ASK
+  const beLF = (newCask / newYield) * 100;
+  
+  chartBE.data.datasets[0].data[2] = parseFloat(beLF.toFixed(1));
+  chartBE.data.datasets[0].backgroundColor[2] = beLF > 100 ? 'rgba(255,69,96,0.9)' : (beLF > 85 ? 'rgba(245,197,24,0.8)' : 'rgba(0,229,160,0.8)');
+  chartBE.update();
+
+  // DCF Sens proxy: each 1000Cr drop in steady-state FCF drops EV by ~10000Cr (10x multiple), drops share price by ~260
+  const fcfDrop = 14500 - newFCF; // base FCF approx 14500
+  let newSharePrice = 5820 - (fcfDrop * 0.26); 
+  if (newSharePrice < 0) newSharePrice = 0;
+  
+  chartVal.data.datasets[0].data[2] = newSharePrice;
+  chartVal.data.datasets[0].borderColor = newSharePrice < 5048 ? '#ff4560' : '#00e5a0';
+  chartVal.update();
+}
+
+function resetSliders() {
+  document.getElementById('sliderFuel').value = 0;
+  document.getElementById('sliderFx').value = 0;
+  document.getElementById('sliderYield').value = 0;
+  updateModel();
+}
+
+document.querySelectorAll('.slider').forEach(s => s.addEventListener('input', updateModel));
+window.onload = () => { initCharts(); updateModel(); };
+
+
+};
+</script>
+</body>
+</html>

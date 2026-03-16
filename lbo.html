@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LBO Model — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .lbo-result{background:linear-gradient(135deg,rgba(245,197,24,0.08),rgba(249,115,22,0.08));border:1px solid rgba(245,197,24,0.3);border-radius:var(--radius);padding:24px;}
+    .lbo-result-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+    .lbo-result-value{font-size:34px;font-weight:900;font-family:'JetBrains Mono',monospace;}
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:20px;">
+        <div class="section-title">🏦 LBO Model — IndiGo Acquisition</div>
+        <div class="section-subtitle">Leveraged Buyout Analysis · Hypothetical PE acquisition of InterGlobe Aviation · Adjust deal assumptions below</div>
+      </div>
+
+      <div style="background:rgba(255,69,96,0.06);border:1px solid rgba(255,69,96,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);" class="animate-in">
+        ⚠️ <strong style="color:var(--accent-red)">LBO Note:</strong> IndiGo is a capital-light airline (no aircraft ownership — leased fleet) but with significant lease liabilities (₹36,420 Cr). Traditional LBO debt capacity is calculated on EBITDAR (pre-lease payment). This model uses EV/EBITDA entry multiple approach and accounts for IndiGo's 25% Tax rate (Indian MAT regime).
+      </div>
+
+      <div class="grid-2 animate-in delay-1">
+        <div class="lbo-result"><div class="lbo-result-label">5-Year IRR</div><div class="lbo-result-value" id="lbo-irr" style="color:var(--accent-gold)">—</div><div style="font-size:13px;color:var(--text-muted);margin-top:6px;" id="irr-comment">Click Calculate</div></div>
+        <div class="lbo-result"><div class="lbo-result-label">MOIC</div><div class="lbo-result-value" id="lbo-moic" style="color:var(--accent-green)">—</div><div style="font-size:13px;color:var(--text-muted);margin-top:6px;" id="moic-comment">—</div></div>
+      </div>
+
+      <div class="grid-2 animate-in delay-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📂 Deal Structure Inputs</div><span class="badge blue">Editable</span></div>
+          <div class="grid-2" style="gap:12px;margin-bottom:0;">
+            <div class="input-group"><label class="input-label">Entry EV (₹ Cr)</label><input type="number" class="fin-input" id="l-ev" value="194557" step="1000"></div>
+            <div class="input-group"><label class="input-label">Entry EBITDA (₹ Cr)</label><input type="number" class="fin-input" id="l-ebitda" value="16293" step="100"></div>
+            <div class="input-group"><label class="input-label">Equity % of Funding</label><input type="number" class="fin-input" id="l-eq" value="40" step="1" min="10" max="70"></div>
+            <div class="input-group"><label class="input-label">Debt % of Funding</label><input type="number" class="fin-input" id="l-debt" value="60" step="1"></div>
+            <div class="input-group"><label class="input-label">Debt Interest Rate (%)</label><input type="number" class="fin-input" id="l-int" value="9.5" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Annual Debt Amort. (% of debt)</label><input type="number" class="fin-input" id="l-amort" value="10" step="1"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="grid-2" style="gap:12px;margin-bottom:0;">
+            <div class="input-group"><label class="input-label">Revenue Growth (%/yr)</label><input type="number" class="fin-input" id="l-revg" value="15.0" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Exit EBITDA Margin (%)</label><input type="number" class="fin-input" id="l-emarg" value="24.5" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Exit EV/EBITDA Multiple</label><input type="number" class="fin-input" id="l-exitmult" value="13.5" step="0.1"></div>
+            <div class="input-group"><label class="input-label">Hold Period (Years)</label><input type="number" class="fin-input" id="l-hold" value="5" step="1" min="3" max="10"></div>
+          </div>
+          <button class="btn btn-primary" onclick="runLBO()" style="margin-top:10px;width:100%;">▶ Calculate LBO Returns</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">💰 Sources &amp; Uses of Funds</div></div>
+          <table class="fin-table" style="font-size:12px;"><thead><tr><th style="text-align:left">Sources</th><th>₹ Cr</th><th>%</th><th style="text-align:left">Uses</th><th>₹ Cr</th><th>%</th></tr></thead><tbody id="su-body"></tbody></table>
+          <div class="divider"></div>
+          <div class="card-header"><div class="card-title">📐 Entry / Exit Summary</div></div>
+          <div id="entry-exit"></div>
+        </div>
+      </div>
+
+      <div class="card animate-in delay-3" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">🗓️ Annual Debt Schedule &amp; Cash Flows</div>
+          <span class="badge gold">👉 Scroll Horizontally</span>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;"><table class="fin-table" style="font-size:12px;"><thead><tr id="sched-head"></tr></thead><tbody id="sched-body"></tbody></table></div>
+      </div>
+
+      <div class="card animate-in delay-4">
+        <div class="card-header"><div class="card-title">📈 Equity Value Bridge — Entry to Exit</div></div>
+        <div class="chart-container" style="height:230px;"><canvas id="lboChart"></canvas></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('lbo.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('LBO Model', 'IndiGo — Leveraged Buyout Analysis · Hypothetical PE Acquisition Scenario');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+let lboCh;
+function fmtK(n){return Math.abs(n)>=1000?(n/1000).toFixed(1)+'K':n.toFixed(0);}
+
+function runLBO(){
+  const pp=parseFloat(document.getElementById('l-ev').value);
+  const entEB=parseFloat(document.getElementById('l-ebitda').value);
+  const eqPct=parseFloat(document.getElementById('l-eq').value)/100;
+  const debtPct=parseFloat(document.getElementById('l-debt').value)/100;
+  const intR=parseFloat(document.getElementById('l-int').value)/100;
+  const amortPct=parseFloat(document.getElementById('l-amort').value)/100;
+  const revG=parseFloat(document.getElementById('l-revg').value)/100;
+  const exitMarg=parseFloat(document.getElementById('l-emarg').value)/100;
+  const exitMult=parseFloat(document.getElementById('l-exitmult').value);
+  const hold=parseInt(document.getElementById('l-hold').value);
+
+  const equity=pp*eqPct;
+  const totDebt=pp*debtPct;
+  const entMult=(pp/entEB).toFixed(1);
+
+  document.getElementById('su-body').innerHTML=`
+    <tr><td>Sponsor Equity</td><td>₹${fmtK(equity)}</td><td>${(eqPct*100).toFixed(0)}%</td><td>Purchase Price (EV)</td><td>₹${fmtK(pp)}</td><td>97%</td></tr>
+    <tr><td>Senior Debt</td><td>₹${fmtK(totDebt*0.65)}</td><td>${(debtPct*65).toFixed(0)}%</td><td>Transaction Fees (~3%)</td><td>₹${fmtK(pp*0.03)}</td><td>3%</td></tr>
+    <tr><td>Mezz/Sub Debt</td><td>₹${fmtK(totDebt*0.35)}</td><td>${(debtPct*35).toFixed(0)}%</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr class="total"><td>Total Sources</td><td>₹${fmtK(pp*1.03)}</td><td>100%</td><td>Total Uses</td><td>₹${fmtK(pp*1.03)}</td><td>100%</td></tr>`;
+
+  document.getElementById('entry-exit').innerHTML=`
+    <div class="metric-row"><span class="metric-name">Entry EV/EBITDA</span><span class="metric-value" style="color:var(--accent-gold)">${entMult}x</span></div>
+    <div class="metric-row"><span class="metric-name">Entry Equity Investment</span><span class="metric-value">₹${fmtK(equity)} Cr</span></div>
+    <div class="metric-row"><span class="metric-name">Entry Leverage (Debt/EBITDA)</span><span class="metric-value" style="color:var(--accent-red)">${(totDebt/entEB).toFixed(1)}x</span></div>`;
+
+  let debt=totDebt;
+  const years=[],revs=[],ebitdas=[],ints=[],amorts=[],fcfs=[],debts=[];
+  let rev=71230;
+  for(let i=1;i<=hold;i++){
+    rev*=(1+revG);
+    const ebitda=rev*exitMarg;
+    const interest=debt*intR;
+    const amort=Math.min(totDebt*amortPct,debt);
+    const fcf=ebitda*0.65-interest;
+    debt=Math.max(0,debt-amort);
+    years.push('Yr '+i);
+    revs.push(Math.round(rev)); ebitdas.push(Math.round(ebitda));
+    ints.push(Math.round(interest)); amorts.push(Math.round(amort));
+    fcfs.push(Math.round(fcf)); debts.push(Math.round(debt));
+  }
+
+  const exitEBITDA=revs[hold-1]*exitMarg;
+  const exitEV=exitEBITDA*exitMult;
+  const exitEquity=exitEV-debt;
+  const moic=(exitEquity/equity);
+
+  let irr=0.20;
+  for(let k=0;k<1500;k++){
+    const pv=-equity+exitEquity/Math.pow(1+irr,hold);
+    const dpv=-hold*exitEquity/Math.pow(1+irr,hold+1);
+    if(Math.abs(dpv)<1e-10) break;
+    const ni=irr-pv/dpv;
+    if(Math.abs(ni-irr)<0.00001){irr=ni;break;}
+    irr=ni;
+  }
+
+  document.getElementById('lbo-irr').textContent=(irr*100).toFixed(1)+'%';
+  document.getElementById('lbo-moic').textContent=moic.toFixed(2)+'x';
+  document.getElementById('irr-comment').innerHTML='Hurdle: 20% | '+(irr>=0.25?'<span style="color:var(--accent-green)">Excellent (&gt;25%)</span>':irr>=0.20?'<span style="color:var(--accent-green)">Strong (20–25%)</span>':irr>=0.15?'<span style="color:var(--accent-gold)">Acceptable (15–20%)</span>':'<span style="color:var(--accent-red)">Below hurdle (&lt;15%)</span>');
+  document.getElementById('moic-comment').innerHTML='Exit Equity: <strong style="color:var(--accent-green)">₹'+fmtK(exitEquity)+' Cr</strong> · Exit EV: <strong style="color:var(--accent-blue)">₹'+fmtK(exitEV)+' Cr</strong>';
+
+  document.getElementById('sched-head').innerHTML='<th style="text-align:left">Metric (₹Cr)</th>'+years.map(y=>`<th>${y}</th>`).join('');
+  const rows2=[['Revenue',revs],['EBITDA',ebitdas],['Interest Expense',ints.map(v=>'('+v+')')],['FCF',fcfs],['Debt Balance',debts]];
+  document.getElementById('sched-body').innerHTML=rows2.map(([l,vals])=>`<tr ${l==='FCF'?'class="subtotal"':l==='Debt Balance'?'class="total"':''}><td>${l}</td>${vals.map(v=>`<td>${typeof v==='number'?v.toLocaleString():v}</td>`).join('')}</tr>`).join('');
+
+  const bkts=[equity,...ebitdas.map((_,i)=>equity*(1+Math.pow(moic,i/hold)-1)).slice(0,-1),exitEquity];
+  const ctx=document.getElementById('lboChart');
+  if(lboCh) lboCh.destroy();
+  lboCh=new Chart(ctx,{type:'bar',data:{
+    labels:['Entry Equity',...years,'Exit Equity'],
+    datasets:[{label:'Equity Value (₹Cr)',data:bkts,backgroundColor:bkts.map((_,i)=>i===0?'rgba(255,69,96,0.7)':i===bkts.length-1?'rgba(0,229,160,0.9)':'rgba(0,180,255,0.55)'),borderRadius:6}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:11}}},y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:v=>'₹'+(Math.abs(v)>=1000?(v/1000).toFixed(0)+'K':v)+' Cr'}}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1}}}});
+}
+
+runLBO();
+
+};
+</script>
+</body>
+</html>

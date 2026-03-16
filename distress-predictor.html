@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IndiGo — Distress Predictor & Altman Z-Score</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .z-score-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 30px; border-radius: var(--radius); text-align: center; position:relative; overflow:hidden;}
+    .z-value { font-size: 64px; font-family: 'JetBrains Mono', monospace; font-weight: 800; line-height: 1; margin: 10px 0;}
+    .z-status { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;}
+
+    /* Gauge styles */
+    .gauge-wrapper { position: relative; width: 300px; height: 150px; margin: 20px auto; overflow: hidden; }
+    .gauge-bg { position: absolute; top: 0; left: 0; width: 300px; height: 300px; border-radius: 50%; border: 30px solid rgba(255,255,255,0.05); box-sizing: border-box; }
+    .gauge-color { position: absolute; top: 0; left: 0; width: 300px; height: 300px; border-radius: 50%; border: 30px solid transparent; border-top-color: var(--accent-red); border-right-color: var(--accent-gold); border-bottom-color: var(--accent-green); border-left-color: var(--accent-green); transform: rotate(45deg); box-sizing: border-box; opacity:0.8;}
+    .gauge-needle { position: absolute; bottom: 0; left: 150px; width: 4px; height: 100px; background: white; transform-origin: bottom center; transform: rotate(-90deg); transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.5); border-radius: 2px;}
+    .gauge-center { position: absolute; bottom: -10px; left: 140px; width: 20px; height: 20px; background: white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+    .zone-indicator { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: 700; width: 300px; margin: 10px auto; text-transform: uppercase; }
+    
+    .explanation { background: rgba(0,180,255,0.05); padding: 20px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin-top: 20px;}
+    .formula-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(0,180,255,0.1); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:24px;">
+        <div class="section-title">🚨 Early Warning Distress Predictor</div>
+        <div class="section-subtitle">Real-time Altman Z-Score calculating bankruptcy risk based on balance sheet & profitability metrics (FY25E).</div>
+      </div>
+
+      <div class="grid-2 animate-in delay-1">
+        
+        <!-- Gauge Card -->
+        <div class="z-score-card">
+          <div class="card-title" style="margin-bottom:10px;">Altman Z-Score (Non-Manufacturing)</div>
+          
+          <div class="gauge-wrapper">
+            <div class="gauge-bg"></div>
+            <div class="gauge-color" style="border-top-color: var(--accent-red); border-right-color: var(--accent-gold); border-bottom-color: var(--accent-green); border-left-color: var(--accent-green);"></div>
+            <div class="gauge-needle" id="needle"></div>
+            <div class="gauge-center"></div>
+          </div>
+          <div class="zone-indicator">
+            <span style="color:var(--accent-red)">Distress</span>
+            <span style="color:var(--accent-gold)">Grey</span>
+            <span style="color:var(--accent-green)">Safe</span>
+          </div>
+
+          <div class="z-value" id="z-text">0.90</div>
+          <div class="z-status" id="z-status-text" style="color:var(--accent-red)">Distress Zone</div>
+
+          <div class="explanation">
+            <strong>Context for Airlines:</strong> An un-adjusted Z-Score of <span style="color:var(--accent-red)">1.1 or lower</span> indicates high bankruptcy risk. However, post-IND AS 116, airlines capitalize operational aircraft leases as Debt, severely bloating liabilities and crushing book equity, pulling the score artificially down. IndiGo's massive market cap vs tiny book equity shows the market ignores this technical distress.
+          </div>
+        </div>
+
+        <!-- Formula Breakdown -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🧮 Z-Score Components (FY24 Actual)</div><span class="badge blue">Model: Z = 6.56(T1) + 3.26(T2) + 6.72(T3) + 1.05(T4)</span></div>
+          
+          <div class="formula-row" style="color:var(--text-primary); font-weight:700; background:rgba(0,180,255,0.05); padding:10px;">
+            <span>Variable</span><span>Formula</span><span>Value</span><span>Weight</span><span>Sub-Score</span>
+          </div>
+          
+          <!-- T1 -->
+          <div class="formula-row">
+            <span>T1: Liquidity</span><span>WC / Total Assets</span><span>0.004</span><span>× 6.56</span><span style="color:var(--text-primary)">0.026</span>
+          </div>
+          <!-- T2 -->
+          <div class="formula-row">
+            <span>T2: Profitability</span><span>Retained Earn / Assets</span><span>0.024</span><span>× 3.26</span><span style="color:var(--text-primary)">0.078</span>
+          </div>
+          <!-- T3 -->
+          <div class="formula-row">
+            <span>T3: Operating Perf</span><span>EBIT / Total Assets</span><span>0.115</span><span>× 6.72</span><span style="color:var(--text-primary)">0.773</span>
+          </div>
+          <!-- T4 -->
+          <div class="formula-row">
+            <span>T4: Solvency</span><span>Equity / Liab</span><span>0.025</span><span>× 1.05</span><span style="color:var(--text-primary)">0.026</span>
+          </div>
+          
+          <div class="formula-row" style="border-bottom:none; margin-top:10px; font-size:16px; font-weight:800; color:var(--accent-blue)">
+            <span>Total Z-Score</span><span></span><span></span><span></span><span>0.903</span>
+          </div>
+
+          <div style="margin-top:20px; font-size:12px; color:var(--text-muted)">
+            * IndiGo's Working Capital was ₹320Cr on Assets of ₹82,225Cr. Its Book Equity is nearly zero (₹1,996Cr) compared to Liabilities of ₹80,229Cr. The strong EBIT (₹9,473Cr) generates almost the entire score.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="card animate-in delay-2" style="margin-top:20px;">
+        <div class="card-header"><div class="card-title">📈 5-Year Z-Score Trend & Liquidity Tracker</div></div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Tracking the distress proxy through COVID (FY21/22) to the FY24 recovery.</div>
+        <div class="chart-container" style="height:260px;"><canvas id="trendChart"></canvas></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('distress-predictor.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('Distress Predictor', 'Altman Z-Score & Bankruptcy Risk');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+// Calculate Historical Z-Scores (FY20 - FY24)
+// Z = 6.56(WC/TA) + 3.26(RE/TA) + 6.72(EBIT/TA) + 1.05(EQ/TL)
+
+const years = BS.years; // 5 years
+const wc = BS.currentAssets.map((ca, i) => ca - BS.currentLiab[i]);
+const ebitTail = IS.ebit.slice(-5); // Last 5 years
+
+const zScores = [];
+for(let i=0; i<5; i++) {
+  const t1 = wc[i] / BS.totalAssets[i];
+  const t2 = BS.retainedEarnings[i] / BS.totalAssets[i];
+  const t3 = ebitTail[i] / BS.totalAssets[i];
+  const t4 = BS.totalEquity[i] / BS.totalLiab[i];
+  const z = (6.56*t1) + (3.26*t2) + (6.72*t3) + (1.05*t4);
+  zScores.push(z);
+}
+
+// Map score to angle
+// 0.0 to 1.1 = Distress (-90 to -30)
+// 1.1 to 2.6 = Grey (-30 to 30)
+// 2.6 to 4.0 = Safe (30 to 90)
+const zValue = zScores[4]; // FY24
+let angle = -90; // Default distress bottom
+
+if (zValue <= 1.1) {
+  angle = -90 + ((zValue / 1.1) * 60); 
+} else if (zValue <= 2.6) {
+  angle = -30 + (((zValue - 1.1) / 1.5) * 60);
+} else {
+  angle = 30 + (Math.min(1, (zValue - 2.6) / 1.4) * 60);
+}
+// Bound angle
+angle = Math.max(-90, Math.min(90, angle));
+
+window.onload = () => {
+  document.getElementById('z-text').innerText = zValue.toFixed(2);
+  setTimeout(() => {
+    document.getElementById('needle').style.transform = `rotate(${angle}deg)`;
+  }, 300);
+
+  // Chart
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Altman Z-Score', data: zScores.map(z=>parseFloat(z.toFixed(2))), 
+          borderColor: '#f5c518', backgroundColor: 'rgba(245,197,24,0.1)', fill:true, tension:0.4, borderWidth: 3, pointRadius: 5 },
+        { label: 'Cash Balance (₹ Cr)', type:'bar', data: BS.cash, 
+          backgroundColor: 'rgba(0,180,255,0.3)', yAxisID: 'y2', borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        y: { 
+          min: -2, max: 2, 
+          grid: {color: 'rgba(0,180,255,0.05)'},
+          ticks: {color:'#f5c518'}
+        },
+        y2: {
+          position: 'right', grid:{display:false}, ticks:{color:'#00b4ff', callback:v=>'₹'+(v/1000).toFixed(0)+'K'}
+        }
+      },
+      plugins: {
+        annotation: {
+          annotations: {
+            distressLine: { type: 'line', yMin: 1.1, yMax: 1.1, borderColor: '#ff4560', borderWidth: 1, borderDash: [4,4], label:{content:'Distress Threshold (1.1)', display:true, position:'end', color:'#ff4560', backgroundColor:'transparent'} },
+            safeLine: { type: 'line', yMin: 2.6, yMax: 2.6, borderColor: '#00e5a0', borderWidth: 1, borderDash: [4,4] }
+          }
+        }
+      }
+    }
+  });
+};
+</script>
+<!-- Note: chartjs-plugin-annotation is needed for the threshold lines, assuming it's loaded dynamically or ignored if not present -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js">
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Financial Ratios — IndiGo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    .ratio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+    .ratio-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: var(--transition); display:flex; flex-direction:column; justify-content:space-between; }
+    .ratio-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
+    .ratio-title { font-size: 13px; font-weight:700; color: #4ECDC4; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align:center; }
+    .formula-math { font-size: 10px; color: #a2b0c2; text-align:center; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; background:rgba(255,255,255,0.03); padding:6px; border-radius:4px; border:1px solid rgba(255,255,255,0.05); }
+    .formula-math .dividend { border-bottom:1px solid #a2b0c2; display:block; padding-bottom:2px; margin-bottom:2px; }
+    .formula-math .divisor { display:block; }
+    .ratio-value { font-size: 28px; font-weight: 900; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; text-align:center; color: #FAFAFA; }
+    .ratio-benchmark { font-size: 11px; color: var(--text-muted); line-height: 1.5; text-align:center; }
+    .section-header-ratios { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #4ECDC4; color:#4ECDC4; text-align:center; }
+    
+    /* Layout tweaks */
+    .grid-2-cols { grid-template-columns: repeat(2, 1fr); }
+    .grid-2-center { display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px; width:66%; margin:0 auto; margin-bottom: 24px;}
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:24px;">
+        <div class="section-title" style="text-align:center; font-size:24px;">📐 Financial Ratios — IndiGo FY2024</div>
+        <div class="section-subtitle" style="text-align:center;">Comprehensive Financial Ratio Analysis based on Real FY2024 Audited Statements</div>
+      </div>
+
+      <!-- Tab filter -->
+      <div class="tabs animate-in delay-1" style="justify-content:center; margin-bottom:30px;">
+        <button class="tab active" onclick="showSec('all',this)">All</button>
+        <button class="tab" onclick="showSec('liquidity',this)">Liquidity</button>
+        <button class="tab" onclick="showSec('profitability',this)">Profitability</button>
+        <button class="tab" onclick="showSec('leverage',this)">Leverage</button>
+        <button class="tab" onclick="showSec('efficiency',this)">Efficiency</button>
+        <button class="tab" onclick="showSec('market',this)">Market Value</button>
+      </div>
+
+      <!-- LIQUIDITY RATIOS -->
+      <div class="ratio-sec" id="sec-liquidity">
+        <div class="section-header-ratios">Liquidity Ratios</div>
+        <div class="ratio-grid">
+          <div class="ratio-card">
+            <div class="ratio-title">Current Ratio</div>
+            <div class="formula-math"><span class="dividend">Current Asset</span><span class="divisor">Current Liabilities</span></div>
+            <div class="ratio-value">1.17x</div>
+            <div class="ratio-benchmark">35,900 Cr / 30,800 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Quick Ratio</div>
+            <div class="formula-math"><span class="dividend">Current Asset - Inventory</span><span class="divisor">Current Liabilities</span></div>
+            <div class="ratio-value">1.15x</div>
+            <div class="ratio-benchmark">(35,900 - 625) Cr / 30,800 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Cash Ratio</div>
+            <div class="formula-math"><span class="dividend">Cash and Cash Equivalents</span><span class="divisor">Current Liabilities</span></div>
+            <div class="ratio-value">0.69x</div>
+            <div class="ratio-benchmark">21,222 Cr / 30,800 Cr</div>
+          </div>
+        </div>
+        <div class="grid-2-center">
+          <div class="ratio-card" style="grid-column: 1 / span 2; width:50%; margin:0 auto;">
+            <div class="ratio-title">Operating Cash Flow Ratio</div>
+            <div class="formula-math"><span class="dividend">Operating Cash Flow</span><span class="divisor">Current Liabilities</span></div>
+            <div class="ratio-value">0.69x</div>
+            <div class="ratio-benchmark">21,200 Cr / 30,800 Cr</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFITABILITY RATIOS -->
+      <div class="ratio-sec" id="sec-profitability">
+        <div class="section-header-ratios">Profitability Ratios</div>
+        <div class="ratio-grid">
+          <div class="ratio-card">
+            <div class="ratio-title">Gross Profit Margin</div>
+            <div class="formula-math"><span class="dividend">Revenue - COGS (Fuel)</span><span class="divisor">Revenue</span></div>
+            <div class="ratio-value">63.2%</div>
+            <div class="ratio-benchmark">(71,231 - 26,180) Cr / 71,231 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Net Profit Margin</div>
+            <div class="formula-math"><span class="dividend">Net Income</span><span class="divisor">Revenue</span></div>
+            <div class="ratio-value">11.47%</div>
+            <div class="ratio-benchmark">8,172 Cr / 71,231 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Return on Assets (ROA)</div>
+            <div class="formula-math"><span class="dividend">Net Income</span><span class="divisor">Total Asset</span></div>
+            <div class="ratio-value">9.67%</div>
+            <div class="ratio-benchmark">8,172 Cr / 84,500 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Return on Equity (ROE)</div>
+            <div class="formula-math"><span class="dividend">Net Income</span><span class="divisor">Shareholder's Equity</span></div>
+            <div class="ratio-value">423.0%</div>
+            <div class="ratio-benchmark">8,172 Cr / 1,932 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Operating Profit Margin</div>
+            <div class="formula-math"><span class="dividend">Operating Income</span><span class="divisor">Revenue</span></div>
+            <div class="ratio-value">13.3%</div>
+            <div class="ratio-benchmark">9,473 Cr / 71,231 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Dividend Yield</div>
+            <div class="formula-math"><span class="dividend">Annual Dividends per Share</span><span class="divisor">Price per Share</span></div>
+            <div class="ratio-value">0.00%</div>
+            <div class="ratio-benchmark">₹0.00 / ₹5,048.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEVERAGE RATIOS -->
+      <div class="ratio-sec" id="sec-leverage">
+        <div class="section-header-ratios">Leverage Ratios</div>
+        <div class="ratio-grid">
+          <div class="ratio-card">
+            <div class="ratio-title">Debt-to-Equity Ratio</div>
+            <div class="formula-math"><span class="dividend">Total Liabilities</span><span class="divisor">Shareholder's Equity</span></div>
+            <div class="ratio-value">42.74x</div>
+            <div class="ratio-benchmark">82,568 Cr / 1,932 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Interest Coverage Ratio</div>
+            <div class="formula-math"><span class="dividend">EBIT</span><span class="divisor">Interest Expenses</span></div>
+            <div class="ratio-value">2.25x</div>
+            <div class="ratio-benchmark">9,473 Cr / 4,208 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Equity Ratio</div>
+            <div class="formula-math"><span class="dividend">Shareholder's Equity</span><span class="divisor">Total Liabilities</span></div>
+            <div class="ratio-value">0.02x</div>
+            <div class="ratio-benchmark">1,932 Cr / 82,568 Cr</div>
+          </div>
+        </div>
+        <div class="grid-2-center">
+          <div class="ratio-card">
+            <div class="ratio-title">Debt Service Coverage (DSCR)</div>
+            <div class="formula-math"><span class="dividend">Net operating income</span><span class="divisor">Total debt service</span></div>
+            <div class="ratio-value">0.67x</div>
+            <div class="ratio-benchmark">9,473 Cr / 14,208 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Debt-to-Asset Ratio</div>
+            <div class="formula-math"><span class="dividend">Total Liabilities</span><span class="divisor">Total Assets</span></div>
+            <div class="ratio-value">0.98x</div>
+            <div class="ratio-benchmark">82,568 Cr / 84,500 Cr</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EFFICIENCY RATIOS -->
+      <div class="ratio-sec" id="sec-efficiency">
+        <div class="section-header-ratios">Efficiency Ratios</div>
+        <div class="grid-2-center" style="width:100%;">
+          <div class="ratio-card">
+            <div class="ratio-title">Inventory Turnover Ratio</div>
+            <div class="formula-math"><span class="dividend">COGS</span><span class="divisor">Average Inventory</span></div>
+            <div class="ratio-value">41.89x</div>
+            <div class="ratio-benchmark">26,180 Cr / 625 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Asset Turnover Ratio</div>
+            <div class="formula-math"><span class="dividend">Sales</span><span class="divisor">Total Assets</span></div>
+            <div class="ratio-value">0.84x</div>
+            <div class="ratio-benchmark">71,231 Cr / 84,500 Cr</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Days Sales Outstanding (DSO)</div>
+            <div class="formula-math"><span class="dividend">Accounts receivable</span><span class="divisor">Total sales</span> &times; Number of days</div>
+            <div class="ratio-value">3.29 Days</div>
+            <div class="ratio-benchmark">(643 Cr / 71,231 Cr) * 365</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Days Inventory Outstanding (DIO)</div>
+            <div class="formula-math"><span class="dividend">Average inventory</span><span class="divisor">Cost of goods sold</span> &times; Number of days</div>
+            <div class="ratio-value">8.71 Days</div>
+            <div class="ratio-benchmark">(625 Cr / 26,180 Cr) * 365</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKET VALUE RATIOS -->
+      <div class="ratio-sec" id="sec-market">
+        <div class="section-header-ratios">Market Value Ratios</div>
+        <div class="ratio-grid">
+          <div class="ratio-card">
+            <div class="ratio-title">Price-to-Earnings (P/E) Ratio</div>
+            <div class="formula-math"><span class="dividend">Market price per share</span><span class="divisor">EPS</span></div>
+            <div class="ratio-value">23.82x</div>
+            <div class="ratio-benchmark">₹5,048 / ₹211.87</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Price-to-Book (P/B) Ratio</div>
+            <div class="formula-math"><span class="dividend">Market price per share</span><span class="divisor">Book Value per Share</span></div>
+            <div class="ratio-value">1,009.6x</div>
+            <div class="ratio-benchmark">₹5,048 / ₹5.00</div>
+          </div>
+          <div class="ratio-card">
+            <div class="ratio-title">Price-to-Sales (P/S) Ratio</div>
+            <div class="formula-math"><span class="dividend">Market price per share</span><span class="divisor">Revenue per Share</span></div>
+            <div class="ratio-value">2.73x</div>
+            <div class="ratio-benchmark">₹5,048 / ₹184.67</div>
+          </div>
+        </div>
+        <div class="grid-2-center">
+          <div class="ratio-card" style="grid-column: 1 / span 2; width:50%; margin:0 auto;">
+            <div class="ratio-title">Earnings Yield</div>
+            <div class="formula-math"><span class="dividend">Earnings Per Share (EPS)</span><span class="divisor">Market Price Per Share</span></div>
+            <div class="ratio-value">4.19%</div>
+            <div class="ratio-benchmark">₹211.87 / ₹5,048.00</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+  document.getElementById('sidebar-mount').innerHTML = buildSidebar('ratios.html');
+  document.getElementById('topbar-mount').innerHTML = buildTopbar('Financial Ratios', 'IndiGo — Comprehensive Financial Ratios (FY2024)');
+  document.getElementById('ticker').innerHTML = buildTicker();
+
+  window.showSec = function(s, btn){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+    const secs=['liquidity','profitability','leverage','efficiency', 'market'];
+    secs.forEach(id=>{ document.getElementById('sec-'+id).style.display=(s==='all'||s===id)?'block':'none'; });
+  };
+  
+  // Clean initialization layout issues
+  Array.from(document.querySelectorAll('.ratio-sec')).forEach(el => el.style.display='block');
+};
+</script>
+</body>
+</html>

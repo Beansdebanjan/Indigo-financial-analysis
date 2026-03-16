@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>M&A Comps — IndiGo (Global Peers)</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebar-mount"></div>
+  <div class="main-content">
+    <div class="ticker-bar"><div class="ticker-inner" id="ticker"></div></div>
+    <div id="topbar-mount"></div>
+    <div class="content-area">
+
+      <div class="animate-in" style="margin-bottom:20px;">
+        <div class="section-title">🤝 M&A Comparable Analysis — Global Peers (LCC & FSC)</div>
+        <div class="section-subtitle">IndiGo vs Global Airlines · EV/EBITDA, P/E, EV/Revenue · Valuation Benchmarking · FY2024 Data</div>
+      </div>
+
+      <div class="kpi-grid animate-in delay-1" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card blue"><div class="kpi-accent"></div><div class="kpi-label">IndiGo EV/EBITDA</div><div class="kpi-value" style="font-size:22px;">11.9x</div><div class="kpi-change up">Peer Median: 5.5x · Premium</div></div>
+        <div class="kpi-card green"><div class="kpi-accent"></div><div class="kpi-label">IndiGo P/E (TTM)</div><div class="kpi-value" style="font-size:22px;">23.8x</div><div class="kpi-change up">Global Array: 4x–45x · Premium</div></div>
+        <div class="kpi-card gold"><div class="kpi-accent"></div><div class="kpi-label">IndiGo EV/Revenue</div><div class="kpi-value" style="font-size:22px;">2.7x</div><div class="kpi-change up">Emerging mkt premium justified</div></div>
+        <div class="kpi-card purple"><div class="kpi-accent"></div><div class="kpi-label">EBITDA Margin</div><div class="kpi-value" style="font-size:22px;">22.9%</div><div class="kpi-change up">Top-Tier Margin Nationally</div></div>
+      </div>
+
+      <!-- Comps Table -->
+      <div class="card animate-in delay-2">
+        <div class="card-header">
+          <div class="card-title">📋 Global Airline Comparable Companies</div>
+          <div style="display:flex;gap:8px;"><span class="badge blue">16 Peers</span><span class="badge gold">In local currencies, EV in ₹ Cr equiv.</span><span class="badge gold">👉 Scroll Horizontally</span></div>
+        </div>
+        <div style="overflow-x:auto; padding-bottom: 8px;">
+        <table class="fin-table" id="comps-table">
+          <thead><tr>
+            <th style="text-align:left">Company</th><th style="text-align:left">Country</th>
+            <th>EV</th><th>Revenue</th><th>EBITDA</th><th>Net Inc</th>
+            <th>EV/Rev</th><th>EV/EBITDA</th><th>P/E</th><th>EBITDA Marg</th>
+          </tr></thead>
+          <tbody id="comps-body"></tbody>
+          <tfoot id="comps-stats"></tfoot>
+        </table>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid-2 animate-in delay-3" style="margin-top:20px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 EV/EBITDA — Global Peer Group</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="evEbitdaBar"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 EBITDA Margin Comparison (%)</div></div>
+          <div class="chart-container" style="height:240px;"><canvas id="marginBar"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Football Field -->
+      <div class="card animate-in delay-4" style="margin-top:20px;">
+        <div class="card-header"><div class="card-title">🏈 Football Field — Implied EV for IndiGo (₹ Cr)</div><span class="badge gold">Based on Peer Multiples</span></div>
+        <div class="chart-container" style="height:220px;"><canvas id="footballField"></canvas></div>
+      </div>
+
+      <!-- Valuation Summary Table -->
+      <div class="card animate-in delay-5" style="margin-top:20px;">
+        <div class="card-header"><div class="card-title">💡 Implied Valuation Summary — IndiGo (FY2024)</div></div>
+        <table class="fin-table">
+          <thead><tr><th style="text-align:left">Method</th><th>Metric</th><th>Low Multiple</th><th>High Multiple</th><th>Implied EV Low</th><th>Implied EV High</th><th>Implied Price Low</th><th>Implied Price High</th></tr></thead>
+          <tbody>
+            <tr><td>EV / Revenue</td><td>Rev: ₹71,230 Cr</td><td>0.4x</td><td>2.0x</td><td>₹28,492 Cr</td><td>₹142,460 Cr</td><td class="negative">₹260</td><td class="positive">₹2,980</td></tr>
+            <tr><td>EV / EBITDA</td><td>EBITDA: ₹16,293 Cr</td><td>3.0x</td><td>7.7x</td><td>₹48,879 Cr</td><td>₹1,25,456 Cr</td><td class="negative">₹430</td><td class="positive">₹2,840</td></tr>
+            <tr><td>P / E</td><td>Net Inc: ₹8,173 Cr</td><td>4.2x</td><td>45.2x</td><td>₹34,326 Cr</td><td>₹3,69,421 Cr</td><td class="negative">₹350</td><td class="positive">₹8,644</td></tr>
+            <tr class="total"><td>Current Market (CMP)</td><td>—</td><td>—</td><td>—</td><td>₹1,94,557 Cr</td><td>₹1,94,557 Cr</td><td class="positive">₹5,048</td><td class="positive">₹5,048</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;padding:10px;background:rgba(0,180,255,0.05);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">
+          📌 <strong style="color:var(--accent-blue)">Analyst View:</strong> IndiGo trades at a significant premium to both global LCC peers and Legacy/FSC peers on EV/EBITDA (11.9x vs ~5.5x peer median). This is justified by India's structural growth runway, lack of mature infrastructure saturation, and IndiGo's dominant 63% domestic market share. Most global legacy carriers (Delta, United, Lufthansa) trade in the 4x-6x range due to mature market constraints and high debt burdens.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+window.initCharts = function() {
+document.getElementById('sidebar-mount').innerHTML = buildSidebar('comps.html');
+document.getElementById('topbar-mount').innerHTML = buildTopbar('M&A Comps (Global Peers)', 'IndiGo — Comparable Analysis vs Global LCC & Legacy Carriers');
+document.getElementById('ticker').innerHTML = buildTicker();
+
+// Build comps table
+const tbody=document.getElementById('comps-body');
+tbody.innerHTML=COMPS.map(c=>{
+  const marg=c.margin.toFixed(1);
+  const isT=c.target;
+  const tLast=c.label?` <span style="font-size:9px;color:var(--text-muted)">(${c.label})</span>`:'';
+  return `<tr style="${isT?'background:rgba(0,180,255,0.07);border-left:3px solid var(--accent-blue);':''}">
+    <td>${c.name}${tLast}${isT?'<span class="badge blue" style="margin-left:8px;font-size:9px;">TARGET</span>':''}</td>
+    <td style="font-size:11px;color:var(--text-muted)">${c.country}</td>
+    <td style="font-family:var(--jb)">${c.ev>=1000?(c.ev/1000).toFixed(0)+'K':c.ev}</td>
+    <td>${c.rev>=1000?(c.rev/1000).toFixed(0)+'K':c.rev}</td>
+    <td>${c.ebitda<0?'<span class="negative">('+Math.abs(c.ebitda/1000).toFixed(1)+'K)</span>':(c.ebitda/1000).toFixed(1)+'K'}</td>
+    <td class="${c.netInc>=0?'positive':'negative'}">${c.netInc<0?'('+Math.abs(c.netInc/1000).toFixed(1)+'K)':(c.netInc/1000).toFixed(1)+'K'}</td>
+    <td>${c.evRev.toFixed(1)}x</td>
+    <td class="${isT?'positive':''}">${c.evEbitda?c.evEbitda.toFixed(1)+'x':'—'}</td>
+    <td>${c.pe?c.pe.toFixed(1)+'x':'—'}</td>
+    <td class="${parseFloat(marg)>=20?'positive':parseFloat(marg)<0?'negative':''}">${marg}%</td>
+  </tr>`;}).join('');
+
+// Stats — peers only (exclude current IndiGo target and FY23 version)
+const peers=COMPS.filter(c=>!c.target&&!c.label);
+const med=a=>[...a].sort((x,y)=>x-y)[Math.floor(a.length/2)];
+const evEB=peers.filter(c=>c.evEbitda).map(c=>c.evEbitda);
+const pes=peers.filter(c=>c.pe).map(c=>c.pe);
+document.getElementById('comps-stats').innerHTML=`
+  <tr class="section-header"><td colspan="10">PEER STATISTICS (ex. IndiGo target)</td></tr>
+  <tr class="subtotal"><td>Median</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${med(peers.map(c=>c.evRev)).toFixed(1)}x</td><td>${med(evEB).toFixed(1)}x</td><td>${med(pes).toFixed(1)}x</td><td>—</td></tr>
+  <tr><td>Mean</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${(peers.reduce((s,c)=>s+c.evRev,0)/peers.length).toFixed(1)}x</td><td>${(evEB.reduce((s,v)=>s+v,0)/evEB.length).toFixed(1)}x</td><td>${(pes.reduce((s,v)=>s+v,0)/pes.length).toFixed(1)}x</td><td>—</td></tr>
+  <tr><td>Min / Max</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>${Math.min(...peers.map(c=>c.evRev)).toFixed(1)}x / ${Math.max(...peers.map(c=>c.evRev)).toFixed(1)}x</td><td>${Math.min(...evEB).toFixed(1)}x / ${Math.max(...evEB).toFixed(1)}x</td><td>${Math.min(...pes).toFixed(1)}x / ${Math.max(...pes).toFixed(1)}x</td><td>—</td></tr>`;
+
+const sx={grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10}}};
+const pl={legend:{display:false},tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1}};
+
+new Chart(document.getElementById('evEbitdaBar'),{type:'bar',data:{
+  labels:COMPS.filter(c=>c.evEbitda).map(c=>c.ticker),
+  datasets:[{data:COMPS.filter(c=>c.evEbitda).map(c=>c.evEbitda),
+    backgroundColor:COMPS.filter(c=>c.evEbitda).map(c=>c.target?'rgba(0,229,160,0.85)':'rgba(0,180,255,0.5)'),borderRadius:4}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{y:sx,x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:v=>v+'x'}}},plugins:pl}});
+
+new Chart(document.getElementById('marginBar'),{type:'bar',data:{
+  labels:COMPS.map(c=>c.ticker),
+  datasets:[{data:COMPS.map(c=>c.margin),
+    backgroundColor:COMPS.map(c=>c.margin<0?'rgba(255,69,96,0.7)':c.target?'rgba(0,229,160,0.85)':'rgba(168,85,247,0.6)'),borderRadius:4}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{y:sx,x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:v=>v+'%'}}},plugins:pl}});
+
+new Chart(document.getElementById('footballField'),{type:'bar',data:{
+  labels:['EV/Revenue','EV/EBITDA','P/E Multiple','Current Market'],
+  datasets:[
+    {label:'Low',data:[56984,101017,92355,194557],backgroundColor:'rgba(0,180,255,0.3)',borderRadius:4},
+    {label:'High',data:[192321,193887,369421,194557],backgroundColor:'rgba(0,229,160,0.6)',borderRadius:4},
+  ]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+  scales:{y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:11}}},x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{color:'#7aaccc',font:{size:10},callback:v=>'₹'+(v/1000).toFixed(0)+'KCr'}}},
+  plugins:{legend:{labels:{color:'#7aaccc',font:{size:11}}},tooltip:{backgroundColor:'#0a1a30',titleColor:'#e8f4ff',bodyColor:'#7aaccc',borderColor:'#00b4ff33',borderWidth:1}}}});
+
+};
+</script>
+</body>
+</html>
